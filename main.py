@@ -29,7 +29,6 @@ def exec_cmd(command, set_stdin, stdin):
 	if set_stdin:
 		input_path = os.path.join(os.getcwd(),stdin)
 		f = open(input_path,"r")
-		command_redirect = command + " < " + input_path
 		proc = subprocess.Popen(command, stdin=f, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 		f.close()
 	else:

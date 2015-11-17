@@ -1,1 +1,6 @@
 *.pyc
+err
+in
+out
+*.json
+*~

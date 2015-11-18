@@ -3,7 +3,7 @@ import os
 import datetime
 import sys
 import getpass
-import genJSON
+from utils import *
 import shutil
 import hashlib
 
@@ -23,7 +23,7 @@ def main():
 	process_env_vars(metadata)
 	stdout, stderr = exec_cmd(command, set_stdin, stdin)
 	process_app_data(metadata, command, set_stdin, stdin, stdout, stderr, details)
-	genJSON.genJSON(metadata, "metadata")
+	genJSON(metadata, "metadata")
 
 def exec_cmd(command, set_stdin, stdin):
 	if set_stdin:
@@ -75,21 +75,6 @@ def process_app_data(metadata, command, set_stdin, stdin, stdout, stderr, detail
 
 	metadata['application']['details'] = details
 
-def get_hash(filename):
-	md5 = hashlib.md5()
-	f = open(filename,"rb")
-	while True:
-		d = f.read(128)
-		if not d:
-			break
-		md5.update(d)
-	f.close()
-	return md5.hexdigest()
-
-def write_to_file(s, filename):
-	f = open(filename, "w")
-	f.write(s)
-	f.close()
 
 main()
 

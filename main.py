@@ -42,7 +42,6 @@ import sys
 import getpass
 from utils import *
 import shutil
-import hashlib
 
 def main():
   """

@@ -17,9 +17,10 @@
 
 <Purpose>
   Provides a library of utility functions to be used in main.py. These include:
-  genJSON() which outputs a dictionary to a JSON file, get_hash() which generates
-  an MD5 checksum of the file corresponding to a given filename, write_to_file 
-  writes a given string to he file corresponding to a given filename.
+  genJSON() which outputs a dictionary to a JSON file, get_hash() which 
+  generates an MD5 checksum of the file corresponding to a given filename, 
+  write_to_file writes a given string to he file corresponding to a given 
+  filename.
 """
 
 import canonicaljson as json

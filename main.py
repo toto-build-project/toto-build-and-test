@@ -109,10 +109,12 @@ def exec_cmd(command, set_stdin, stdin):
   if set_stdin:
     input_path = os.path.join(os.getcwd(),stdin)
     f = open(input_path,"r")
-    proc = subprocess.Popen(command, stdin=f, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    proc = subprocess.Popen(command, stdin=f, stdout=subprocess.PIPE, 
+      stderr=subprocess.PIPE, shell=True)
     f.close()
   else:
-    proc = ubprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    proc = ubprocess.Popen(command, stdout=subprocess.PIPE, 
+      stderr=subprocess.PIPE, shell=True)
   return proc.communicate()
 
 def process_env_vars(metadata):
@@ -187,8 +189,8 @@ def process_app_data(metadata, command, set_stdin, stdin, stdout, stderr, detail
 
   cwd = os.getcwd()
 
-  # For the stdin, stdout and stderr, write each to a file, hash it, and store the 
-  # hash and filepath to the metadata
+  # For the stdin, stdout and stderr, write each to a file, hash it, and store 
+  # the hash and filepath to the metadata
   if set_stdin:
     input_path = os.path.join(cwd,"in")
     shutil.copyfile(stdin,input_path)

@@ -89,14 +89,15 @@ def exec_cmd(command, set_stdin, stdin):
 
   <Arguments>
     command:
-      The command provided to execute the build or test (e.g. "python test.py", "make").
+      The command provided to execute the build or test (e.g. "python test.py", 
+      "make").
 
     set_stdin:
       A Boolean flag dictating whether or not stdin needs to be specified.
 
     stdin:
-      The filename of the file from which stdin should be read; will be "-" in the case 
-      pf set_stdin = False.
+      The filename of the file from which stdin should be read; will be "-" in 
+      the case of set_stdin = False.
 
   <Exceptions>
     TBD.
@@ -156,15 +157,15 @@ def process_app_data(metadata, command, set_stdin, stdin, stdout, stderr, detail
       The metadata dictonary.
 
     command:
-      The command that was provided to execute the build or test (e.g. "python test.py", 
-      "make").
+      The command that was provided to execute the build or test (e.g. "python 
+      test.py", "make").
 
     set_stdin:
       A Boolean flag dictating whether or not stdin needs to be specified.
 
     stdin:
-      The filename of the file from which stdin should be read; will be "-" in the case 
-      pf set_stdin = False.
+      The filename of the file from which stdin should be read; will be "-" in 
+      the case of set_stdin = False.
 
     stdout:
       A string representing the stdout from the command that was run.

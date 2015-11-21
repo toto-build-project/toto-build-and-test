@@ -80,7 +80,7 @@ def main():
   process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, stderr, details)
 
   # Generate the JSON
-  utils.genJSON(metadata, "metadata")
+  utils.gen_json(metadata, "metadata")
 
 def exec_cmd(cmd_string, set_stdin, input_filepath):
   """

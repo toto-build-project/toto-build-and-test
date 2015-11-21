@@ -48,6 +48,7 @@ def genJSON(dict, name):
   fname = name + '.json'
   f = open(fname, 'w')
   f.write(json.encode_pretty_printed_json(dict))
+  f.close()
 
 def get_hash(filename):
   """

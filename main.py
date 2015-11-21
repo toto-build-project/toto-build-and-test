@@ -20,15 +20,15 @@
   development phases. This script represents the backbone of this application. 
   This script is called as below:
 
-  python main.py <command> <in> <details>
+  python main.py <cmd_string> <input_filepath> <details>
 
   Where:
-    <command> -> the command to be executed for the build/test you want to 
+    <cmd_string> -> the command to be executed for the build/test you want to 
       metadata about; should be encapsulated within quotes ("") if multiple
       words
-    <in> -> optional; a filename for the file from which the stdin should come;
-      if opting to not use this arg, provide the dash character (-) in this 
-      space
+    <input_filepath> -> optional; a filepath for the file from which the stdin 
+      should come; if opting to not use this arg, provide the dash character (-)
+      in this space
     <details> -> any extra details the developer may wish to provide to be 
       included in the metadata file (e.g. software version; developer's not to 
       the user, etc); should be encapsulated within quotes ("") if multiple
@@ -60,13 +60,13 @@ def main():
   """
 
   # Grab the command line arguments
-  command = sys.argv[1]
-  stdin = sys.argv[2]
+  cmd_string = sys.argv[1]
+  input_filepath = sys.argv[2]
   details = sys.argv[3]
 
   # Check if input file was explicitly specified
   set_stdin = True
-  if stdin.strip() == '-':
+  if input_filepath.strip() == '-':
     set_stdin = False
 
   # Setup the metadata dictionary
@@ -76,27 +76,27 @@ def main():
 
   # Execute the given command and fill the metadata dict
   process_env_vars(metadata)
-  stdout, stderr = exec_cmd(command, set_stdin, stdin)
-  process_app_data(metadata, command, set_stdin, stdin, stdout, stderr, details)
+  stdout, stderr = exec_cmd(cmd_string, set_stdin, input_filepath)
+  process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, stderr, details)
 
   # Generate the JSON
   utils.genJSON(metadata, "metadata")
 
-def exec_cmd(command, set_stdin, stdin):
+def exec_cmd(cmd_string, set_stdin, input_filepath):
   """
   <Purpose>
     Execute the given command and redirect input (as necessary).
 
   <Arguments>
-    command:
-      The command provided to execute the build or test (e.g. "python test.py", 
-      "make").
+    cmd_string:
+      A string of the command provided to execute the build or test (e.g. 
+      "python test.py", "make").
 
     set_stdin:
       A Boolean flag dictating whether or not stdin needs to be specified.
 
-    stdin:
-      The filename of the file from which stdin should be read; will be "-" in 
+    input_filepath:
+      The filepath of the file from which stdin should be read; will be "-" in 
       the case of set_stdin = False.
 
   <Exceptions>
@@ -107,15 +107,14 @@ def exec_cmd(command, set_stdin, stdin):
   """
 
   if set_stdin:
-    input_path = os.path.join(os.getcwd(),stdin)
-    f = open(input_path,"r")
-    proc = subprocess.Popen(command, stdin=f, stdout=subprocess.PIPE, 
+    input_fileobj = open(input_filepath,"r")
+    cmd_process = subprocess.Popen(cmd_string, stdin=input_fileobj, stdout=subprocess.PIPE, 
       stderr=subprocess.PIPE, shell=True)
-    f.close()
+    input_fileobj.close()
   else:
-    proc = ubprocess.Popen(command, stdout=subprocess.PIPE, 
+    cmd_process = ubprocess.Popen(cmd_string, stdout=subprocess.PIPE, 
       stderr=subprocess.PIPE, shell=True)
-  return proc.communicate()
+  return cmd_process.communicate()
 
 def process_env_vars(metadata):
   """
@@ -149,7 +148,7 @@ def process_env_vars(metadata):
   metadata['variables']['user'] = getpass.getuser()
   metadata['variables']['curr_working_dir'] = os.getcwd()
 
-def process_app_data(metadata, command, set_stdin, stdin, stdout, stderr, details):
+def process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, stderr, details):
   """
   <Purpose>
     Execute the given command and redirect input (as necessary).
@@ -158,15 +157,15 @@ def process_app_data(metadata, command, set_stdin, stdin, stdout, stderr, detail
     metadata:
       The metadata dictonary.
 
-    command:
-      The command that was provided to execute the build or test (e.g. "python 
-      test.py", "make").
+    cmd_string:
+      A string of the command that was provided to execute the build or test 
+      (e.g. "python test.py", "make").
 
     set_stdin:
       A Boolean flag dictating whether or not stdin needs to be specified.
 
-    stdin:
-      The filename of the file from which stdin should be read; will be "-" in 
+    input_filepath:
+      The filepath of the file from which stdin should be read; will be "-" in 
       the case of set_stdin = False.
 
     stdout:
@@ -185,29 +184,29 @@ def process_app_data(metadata, command, set_stdin, stdin, stdout, stderr, detail
     None.
   """
 
-  metadata['application']['command'] = command
+  metadata['application']['command'] = cmd_string
 
   cwd = os.getcwd()
 
   # For the stdin, stdout and stderr, write each to a file, hash it, and store 
   # the hash and filepath to the metadata
   if set_stdin:
-    input_path = os.path.join(cwd,"in")
-    shutil.copyfile(stdin,input_path)
-    metadata['application']['input_hash'] = utils.get_hash(input_path)
-    metadata['application']['input_path'] = input_path
+    saved_input_path = os.path.join(cwd,"in")
+    shutil.copyfile(input_filepath, saved_input_path)
+    metadata['application']['input_hash'] = utils.get_hash(saved_input_path)
+    metadata['application']['input_path'] = saved_input_path
   else:
     metadata['application']['input_hash'] = None
     metadata['application']['input_path'] = None
 
-  output_path = os.path.join(cwd,"out")
-  utils.write_to_file(stdout, output_path)
-  metadata['application']['output_hash'] = utils.get_hash(output_path)
-  metadata['application']['output_path'] = output_path
-  err_path = os.path.join(cwd,"err")
-  utils.write_to_file(stderr, err_path)
-  metadata['application']['err_hash'] = utils.get_hash(err_path)
-  metadata['application']['err_path'] = err_path
+  saved_output_path = os.path.join(cwd,"out")
+  utils.write_to_file(stdout, saved_output_path)
+  metadata['application']['output_hash'] = utils.get_hash(saved_output_path)
+  metadata['application']['output_path'] = saved_output_path
+  saved_err_path = os.path.join(cwd,"err")
+  utils.write_to_file(stderr, saved_err_path)
+  metadata['application']['err_hash'] = utils.get_hash(saved_err_path)
+  metadata['application']['err_path'] = saved_err_path
 
   metadata['application']['details'] = details
 

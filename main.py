@@ -40,7 +40,7 @@ import os
 import datetime
 import sys
 import getpass
-from utils import *
+import utils
 import shutil
 
 def main():
@@ -80,7 +80,7 @@ def main():
   process_app_data(metadata, command, set_stdin, stdin, stdout, stderr, details)
 
   # Generate the JSON
-  genJSON(metadata, "metadata")
+  utils.genJSON(metadata, "metadata")
 
 def exec_cmd(command, set_stdin, stdin):
   """
@@ -194,19 +194,19 @@ def process_app_data(metadata, command, set_stdin, stdin, stdout, stderr, detail
   if set_stdin:
     input_path = os.path.join(cwd,"in")
     shutil.copyfile(stdin,input_path)
-    metadata['application']['input_hash'] = get_hash(input_path)
+    metadata['application']['input_hash'] = utils.get_hash(input_path)
     metadata['application']['input_path'] = input_path
   else:
     metadata['application']['input_hash'] = None
     metadata['application']['input_path'] = None
 
   output_path = os.path.join(cwd,"out")
-  write_to_file(stdout, output_path)
-  metadata['application']['output_hash'] = get_hash(output_path)
+  utils.write_to_file(stdout, output_path)
+  metadata['application']['output_hash'] = utils.get_hash(output_path)
   metadata['application']['output_path'] = output_path
   err_path = os.path.join(cwd,"err")
-  write_to_file(stderr, err_path)
-  metadata['application']['err_hash'] = get_hash(err_path)
+  utils.write_to_file(stderr, err_path)
+  metadata['application']['err_hash'] = utils.get_hash(err_path)
   metadata['application']['err_path'] = err_path
 
   metadata['application']['details'] = details

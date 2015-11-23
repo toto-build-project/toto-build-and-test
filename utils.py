@@ -1,7 +1,13 @@
 import canonicaljson as json
 import hashlib
 
+def countStr(s, subs):
+#searchs s for instances of subs 
+#returns number of instances found
+  return (s.lower()).count(subs)
+
 def genJSON(dict, name):
+#writes json file based on dictionary object
   fname = name + '.json'
   f = open(fname, 'w')
   f.write(json.encode_pretty_printed_json(dict))

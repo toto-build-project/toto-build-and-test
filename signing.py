@@ -24,15 +24,11 @@ def sign_json(data):
   rsakey_dict = tuf.keys.generate_rsa_key()
 	
   #signatures - keyid, method, sig
-  signature = tuf.keys.create_signature(rsakey_dict, data)
-	
-  #signatures - keyid, method, sig
-  signature_dict = tuf.sig.generate_rsa_signature(signature, rsakey_dict)
+  signature_dict = tuf.sig.generate_rsa_signature(data, rsakey_dict)
 	
   rsakey_dict["keyval"]["private"] = ""
-	
-  #what is difference between signature vs signature_dict?
-  data["signatures"] = signature
+
+  data["signatures"] = signature_dict
   data["signed"] = rsakey_dict
 	
   return data

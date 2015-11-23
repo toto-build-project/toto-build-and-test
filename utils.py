@@ -17,7 +17,8 @@
 
 <Purpose>
   Provides a library of utility functions to be used in main.py. These include:
-  gen_json() which outputs a dictionary to a JSON file, get_hash() which 
+  countStr() which returns the number of times a certain substring appears in 
+  a string gen_json() which outputs a dictionary to a JSON file, get_hash() which 
   generates an MD5 checksum of the file corresponding to a given filename, 
   write_to_file writes a given string to he file corresponding to a given 
   filename.
@@ -26,18 +27,27 @@
 import canonicaljson as json
 import hashlib
 
-<<<<<<< HEAD
-def countStr(s, subs):
-#searchs s for instances of subs 
-#returns number of instances found
-  return (s.lower()).count(subs)
+def count_string(s, substring):
+  """
+  <Purpose>
+    Counts occurences of a substring in a string
+  <Arguments>
+    s:
+      The string to be searched.
 
-def genJSON(dict, name):
-#writes json file based on dictionary object
-  fname = name + '.json'
-  f = open(fname, 'w')
-  f.write(json.encode_pretty_printed_json(dict))
-=======
+    substring:
+      The substring that will be searched for in s
+
+  <Exceptions>
+    TBD.
+
+  <Return>
+    count:
+      The number of times substring occured in s
+  """
+  s = s.lower()
+  return s.count(substring)
+
 def gen_json(metadata_dict, metadata_name):
   """
   <Purpose>
@@ -63,7 +73,7 @@ def gen_json(metadata_dict, metadata_name):
   fileobj = open(filename, 'w')
   fileobj.write(json.encode_pretty_printed_json(metadata_dict))
   fileobj.close()
->>>>>>> af860da4a242d32ff12e0c16935d6f3b4a2b6c8c
+
 
 def get_hash(filename):
   """

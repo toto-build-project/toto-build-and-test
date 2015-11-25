@@ -1,0 +1,1 @@
+python main.py "python tests/test.py" tests/test_in.txt "hithere"

@@ -1,1 +1,9 @@
-python main.py "python tests/test.py" tests/test_in.txt "hithere"
+  # calling toto sample project
+  python main.py "python tests/test.py" tests/test_in.txt "hithere"
+
+  # write python command
+  echo "python main.py \"python tests/test.py\" tests/test_in.txt \"hithere\""
+
+  # write cat file command
+  echo "Executing [cat metadata.json], output:  >> "
+  cat metadata.json

@@ -84,16 +84,14 @@ def run_test1():
   data =  {'Name': 'Zara', 'Age': 7, 'Class': 'First'}
   retdata = sign_json(data)
 
-  # GOOD DATA - verify json call
+  # GOOD DATA - testing verify_json
   print "Good Test:  "
   print verify_json(data, retdata)
 
-  # BAD DATA - verify json call
+  # BAD DATA - testing verify_json
   print "Bad Test:  "
   xdata =  {'BBBBBName': 'Zara', 'Age': 7, 'Class': 'First'}
   print verify_json(xdata, retdata)
 
-
-##run_test1()
 
 

@@ -23,15 +23,15 @@ import tuf.keys
 import tuf.sig
 import tuf.util
 
-verbose = 0
-
 def print_object(obj_desc, object):
+  # Return on prints, potentially remove this function
+  return
+  verbose = 0
   if (verbose != 0):
   	return
   print obj_desc + "\n==============================\n" 
   print object
   print "\n==============================\n" 
-
 
 
 def test_verify(orig, data):
@@ -64,7 +64,7 @@ def sign_json(in_data):
   ##print_object("RSA_SIGNATURE", rsa_signature);
 
   # update data with key and signature
-  #rsakey_dict["keyval"]["private"] = ""; 
+  rsakey_dict["keyval"]["private"] = ""; 
   data["signed"] = rsakey_dict
   data["signatures"] = signature
   print_object("FINAL_DATA", data);

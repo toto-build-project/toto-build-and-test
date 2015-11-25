@@ -1,16 +1,20 @@
 """
 <Program Name>
   signing.py
+
 <Author>
   Casey McGinley
   Fernando Maymi
   Catherine Eng
   Justin Valcarel
   Wilson Li
+
 <Started>
   November 22, 2015
+
 <Copyright>
   See LICENSE for licensing information.
+
 <Purpose>
   To sign the metadata.
 """

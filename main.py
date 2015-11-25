@@ -42,6 +42,7 @@ import sys
 import getpass
 import utils
 import shutil
+import signing
 
 def main():
   """
@@ -79,8 +80,9 @@ def main():
   stdout, stderr = exec_cmd(cmd_string, set_stdin, input_filepath)
   process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, stderr, details)
 
-  # Generate the JSON
-  utils.gen_json(metadata, "metadata")
+  # Generate the signed JSON
+  signed_metadata = signing.sign_json(metadata)
+  utils.gen_json(signed_metadata, "metadata")
 
 def exec_cmd(cmd_string, set_stdin, input_filepath):
   """

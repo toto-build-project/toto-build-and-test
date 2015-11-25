@@ -27,7 +27,7 @@ import tuf.util
 
 def print_object(obj_desc, object):
   # Return on prints, potentially remove this function
-  return
+  #return
   verbose = 0
   if (verbose != 0):
   	return
@@ -74,7 +74,7 @@ def sign_json(orig_data):
     TypeError, if a private key is not defined for 'rsakey_dict'.
 
   <Side Effects>
-    None.
+    A 'keys.txt' file containing the encrypted RSA keys will be created.
 
   <Returns>
     A dictionary containing the original data with the addition
@@ -83,19 +83,21 @@ def sign_json(orig_data):
 
   # Create a copy to prevent modifying original data.
   data = orig_data.copy()
-  #print_object("INITIAL_DATA", data);
 
   # Use generated RSA keys to create signature.
   rsakey_dict = tuf.keys.generate_rsa_key()
-  #print_object("RSAKEY_DICT", rsakey_dict);
   rsa_signature = tuf.sig.generate_rsa_signature(data, rsakey_dict)
-  #print_object("RSA_SIGNATURE", rsa_signature);
+
+  # The RSA keys need to be encrypted before it is stored locally
+  encrypted_keys = tuf.keys.encrypt_key(rsakey_dict, "badpassword")
+  fileobj = open('keys.txt', 'w')
+  fileobj.write(encrypted_keys)
+  fileobj.close()
 
   # Update metadata with public key and signature.
-  rsakey_dict['keyval']['private'] = ''; 
+  rsakey_dict['keyval']['private'] = ''
   data['signed'] = rsakey_dict
   data['signatures'] = rsa_signature
-  #print_object("FINAL_DATA", data);
 
   return data
 
@@ -139,12 +141,19 @@ def verify_json(data):
   # Create a copy to prevent modifying original data.
   canonicalData = data.copy()
 
+  # Decrypt the locally stored encrypted keys to use for verification.
+  fileobj = open('keys.txt', 'r')
+  encrypted_key = fileobj.read()
+  key_dict = tuf.keys.decrypt_key(encrypted_key, "badpassword")
+  fileobj.close()
+
   # Verification on metadata needs to be in canonical JSON,
   # and have the 'signed' and 'signatures' key-value pairs removed. 
   del canonicalData['signed']
   del canonicalData['signatures']
   canonicalData = tuf.formats.encode_canonical(canonicalData)
-  verify_state = tuf.keys.verify_signature(data['signed'], data['signatures'], canonicalData)
+  #verify_state = tuf.keys.verify_signature(data['signed'], data['signatures'], canonicalData)
+  verify_state = tuf.keys.verify_signature(key_dict, data['signatures'], canonicalData)
 
   return verify_state
 

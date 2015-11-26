@@ -108,15 +108,15 @@ def verify_json(jsondata):
   """
   <Purpose>
     Determine whether the private key belonging to 'key_dict' produced
-    'signatures' in 'data'. 
+    'signatures' in 'jsondata'. 
     
     The public key found in 'key_dict', the 'method' and 'sig' objects 
-    contained in 'signatures' of 'data', and the other metadata in 'data' 
+    contained in 'signatures' of 'jsondata', and the other metadata in 'jsondata' 
     will be used to complete the verification.
 
   <Arguments>
-    data:
-      A dictionary containing the metadata with the
+    jsondata:
+      A json string containing the metadata with the
       'signed' and 'signatures' fields.
 
   <Exceptions>
@@ -151,23 +151,3 @@ def verify_json(jsondata):
 
   return verify_state
 
-
-
-
-
-def run_test1():
-  # Setup for dictionary and sign json 
-  data = {'Name': 'Zara', 'Age': 7, 'Class': 'First'}
-  retdata = sign_json(data)
-
-  # GOOD DATA - testing verify_json
-  print "Good Test:  "
-  json_retdata_string = json.encode_pretty_printed_json(retdata)
-  print verify_json(json_retdata_string)
-
-  # BAD DATA - testing verify_json
-  print "Bad Test:  "
-  xdata = retdata
-  xdata['Name'] = 'FakeName'
-  json_xdata_string = json.encode_pretty_printed_json(xdata)
-  print verify_json(json_xdata_string)

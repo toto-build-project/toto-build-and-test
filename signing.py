@@ -23,6 +23,7 @@ import tuf
 import tuf.keys
 import tuf.sig
 import tuf.util
+import canonicaljson as json
 
 
 def print_object(obj_desc, object):
@@ -161,10 +162,15 @@ def run_test1():
 
   # GOOD DATA - testing verify_json
   print "Good Test:  "
-  print verify_json(retdata)
+  json_retdata_string = json.encode_pretty_printed_json(retdata)
+  print verify_json(json_retdata_string)
 
   # BAD DATA - testing verify_json
   print "Bad Test:  "
   xdata = retdata
   xdata['Name'] = 'FakeName'
-  print verify_json(xdata)
+  json_xdata_string = json.encode_pretty_printed_json(xdata)
+  print verify_json(json_xdata_string)
+
+
+run_test1()

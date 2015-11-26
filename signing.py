@@ -40,7 +40,7 @@ def print_object(obj_desc, object):
 
 
 
-def sign_json(orig_data):
+def sign_json(data):
   """
   <Purpose>
     Return a dictionary of the original data with
@@ -63,7 +63,7 @@ def sign_json(orig_data):
     and the data to generate the signature.
 
   <Arguments>
-    orig_data:
+    data:
       Data object used to generate the signature.
 
   <Exceptions>
@@ -75,15 +75,13 @@ def sign_json(orig_data):
     TypeError, if a private key is not defined for 'rsakey_dict'.
 
   <Side Effects>
+    'data' is modified to include the 'signed' and 'signatures' fields.
     A 'keystore.txt' file containing the encrypted RSA keys will be created.
 
   <Returns>
     A dictionary containing the original data with the addition
     of the 'signed' and 'signatures' fields.
   """
-
-  # Create a copy to prevent modifying original data.
-  data = orig_data.copy()
 
   # Use generated RSA keys to create signature.
   rsakey_dict = tuf.keys.generate_rsa_key()
@@ -141,13 +139,15 @@ def verify_json(jsondata):
 
   # Need to convert JSON string to dict in order to verify.
   canonicalData = tuf.util.load_json_string(jsondata)
+  signed = canonicalData['signed']
+  signatures = canonicalData['signatures']
 
   # Verification on metadata needs to be in canonical JSON,
   # and have the 'signed' and 'signatures' key-value pairs removed. 
   del canonicalData['signed']
   del canonicalData['signatures']
   canonicalData = tuf.formats.encode_canonical(canonicalData)
-  verify_state = tuf.keys.verify_signature(data['signed'], data['signatures'], canonicalData)
+  verify_state = tuf.keys.verify_signature(signed, signatures, canonicalData)
 
   return verify_state
 
@@ -171,6 +171,3 @@ def run_test1():
   xdata['Name'] = 'FakeName'
   json_xdata_string = json.encode_pretty_printed_json(xdata)
   print verify_json(json_xdata_string)
-
-
-run_test1()

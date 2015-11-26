@@ -75,7 +75,7 @@ def sign_json(orig_data):
     TypeError, if a private key is not defined for 'rsakey_dict'.
 
   <Side Effects>
-    A 'keys.txt' file containing the encrypted RSA keys will be created.
+    A 'keystore.txt' file containing the encrypted RSA keys will be created.
 
   <Returns>
     A dictionary containing the original data with the addition
@@ -91,7 +91,7 @@ def sign_json(orig_data):
 
   # The RSA keys need to be encrypted before it is stored locally
   encrypted_keys = tuf.keys.encrypt_key(rsakey_dict, "badpassword")
-  fileobj = open('keys.txt', 'w')
+  fileobj = open('keystore.txt', 'w')
   fileobj.write(encrypted_keys)
   fileobj.close()
 
@@ -106,7 +106,7 @@ def sign_json(orig_data):
 
 
 
-def verify_json(data):
+def verify_json(jsondata):
   """
   <Purpose>
     Determine whether the private key belonging to 'key_dict' produced
@@ -139,8 +139,8 @@ def verify_json(data):
     False otherwise.  
   """
 
-  # Create a copy to prevent modifying original data.
-  canonicalData = data.copy()
+  # Need to convert JSON string to dict in order to verify.
+  canonicalData = tuf.util.load_json_string(jsondata)
 
   # Verification on metadata needs to be in canonical JSON,
   # and have the 'signed' and 'signatures' key-value pairs removed. 

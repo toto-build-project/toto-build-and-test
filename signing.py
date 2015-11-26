@@ -141,19 +141,12 @@ def verify_json(data):
   # Create a copy to prevent modifying original data.
   canonicalData = data.copy()
 
-  # Decrypt the locally stored encrypted keys to use for verification.
-  fileobj = open('keys.txt', 'r')
-  encrypted_key = fileobj.read()
-  key_dict = tuf.keys.decrypt_key(encrypted_key, "badpassword")
-  fileobj.close()
-
   # Verification on metadata needs to be in canonical JSON,
   # and have the 'signed' and 'signatures' key-value pairs removed. 
   del canonicalData['signed']
   del canonicalData['signatures']
   canonicalData = tuf.formats.encode_canonical(canonicalData)
-  #verify_state = tuf.keys.verify_signature(data['signed'], data['signatures'], canonicalData)
-  verify_state = tuf.keys.verify_signature(key_dict, data['signatures'], canonicalData)
+  verify_state = tuf.keys.verify_signature(data['signed'], data['signatures'], canonicalData)
 
   return verify_state
 

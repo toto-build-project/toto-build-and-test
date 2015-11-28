@@ -155,5 +155,4 @@ def word_found_in_file(filename, word):
   f.close()
   return False
 
-def read_file_as_string(filename):
 

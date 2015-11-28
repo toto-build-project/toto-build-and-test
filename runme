@@ -7,3 +7,5 @@
   # write cat file command
   echo "Executing [cat metadata.json], output:  >> "
   cat metadata.json
+
+

@@ -79,6 +79,7 @@ def main():
   process_env_vars(metadata)
   stdout, stderr = exec_cmd(cmd_string, set_stdin, input_filepath)
   process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, stderr, details)
+  utils.default_out_parser(metadata, "out")
 
   # Generate the signed JSON
   signed_metadata = signing.sign_json(metadata)
@@ -211,5 +212,62 @@ def process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, st
   metadata['application']['err_path'] = saved_err_path
 
   metadata['application']['details'] = details
+
+
+def default_out_parser(metadata_dict, out_filename):
+  """
+  <Purpose>
+    Reads through a specified output file, searches for related terms 
+    corresponding to the categories of failure, warning and success, and records
+    the lines and line numbers in which these terms appear.
+
+  <Arguments>
+    metadata_dict:
+      The dictionary in which we are storing our metadata.
+
+    filename:
+      A string for the path to the outfile we are parsing.
+
+  <Exceptions>
+    TBD.
+
+  <Return>
+    None.
+  """
+
+  # The wordlists used to check got success, failure and warnings
+  success_words = ["success", "succeed"]
+  failure_words = ["fail", "error", "fault"]
+  warning_words = ["warn", "alert", "caution"]
+
+  # Setup the dictionary with lists for success/failure/warning occurences
+  metadata_dict["output_data"] = dict()
+  metadata_dict["output_data"]["success"] = list()
+  metadata_dict["output_data"]["failure"] = list()
+  metadata_dict["output_data"]["warning"] = list()
+
+  # Setup three variables to point to the lists for clarity 
+  success_list = metadata_dict["output_data"]["success"]
+  failure_list = metadata_dict["output_data"]["failure"]
+  warning_list = metadata_dict["output_data"]["warning"]
+
+  # Read through the file and add lines to the corresponding lists
+  out_fileobj = open(out_filename, "r")
+  line_num = 0
+  for line in out_fileobj:
+    line_num += 1
+    line_lower = line.lower()
+    dict_to_add = dict()
+    dict_to_add["line"] = line
+    dict_to_add["line_number"] = line_num
+    if any(word in line_lower for word in success_words):
+      success_list.append(dict_to_add)
+    elif any(word in line_lower for word in failure_words):
+      failure_list.append(dict_to_add)
+    elif any(word in line_lower for word in warning_words):
+      warning_list.append(dict_to_add)
+
+  out_fileobj.close()
+
 
 main()

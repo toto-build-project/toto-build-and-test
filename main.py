@@ -79,7 +79,7 @@ def main():
   process_env_vars(metadata)
   stdout, stderr = exec_cmd(cmd_string, set_stdin, input_filepath)
   process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, stderr, details)
-  utils.default_out_parser(metadata, "out")
+  default_out_parser(metadata, "out")
 
   # Generate the signed JSON
   signed_metadata = signing.sign_json(metadata)

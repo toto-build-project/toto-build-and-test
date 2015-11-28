@@ -114,7 +114,7 @@ def exec_cmd(cmd_string, set_stdin, input_filepath):
       stderr=subprocess.PIPE, shell=True)
     input_fileobj.close()
   else:
-    cmd_process = ubprocess.Popen(cmd_string, stdout=subprocess.PIPE, 
+    cmd_process = subprocess.Popen(cmd_string, stdout=subprocess.PIPE, 
       stderr=subprocess.PIPE, shell=True)
   return cmd_process.communicate()
 

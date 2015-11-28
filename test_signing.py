@@ -37,7 +37,6 @@ class TestSigningMethods(unittest.TestCase):
 
   @classmethod
   def setUpClass(self):
-
     # Setup test_data dictionary to hold test data dictionary.
     # Setup return_data to hold the dictinary returned from 
     # the sign_json call.

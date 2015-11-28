@@ -26,6 +26,7 @@
 
 import canonicaljson as json
 import hashlib
+import os.path, time
 
 def count_string(s, substring):
   """
@@ -128,3 +129,31 @@ def write_to_file(string_to_write, filename):
   fileobj = open(filename, "w")
   fileobj.write(string_to_write)
   fileobj.close()
+
+
+def filecount(filename):
+  count = 0
+  with open(filename) as f:
+    for count, line in enumerate(f):
+      count = count + 1
+  f.close()
+  return count
+
+
+def get_file_modification_time(filename):
+    mtime = os.path.getmtime(filename)
+    rtime = time.ctime(mtime)
+    return rtime
+
+
+def word_found_in_file(filename, word):
+  with open(filename) as f:
+    for line in f:
+      if (word in line):
+        f.close()
+        return True
+  f.close()
+  return False
+
+def read_file_as_string(filename):
+

@@ -131,7 +131,23 @@ def write_to_file(string_to_write, filename):
   fileobj.close()
 
 
-def filecount(filename):
+def file_line_counter(filename):
+  """
+  <Purpose>
+    Takes a filename and counts the number of lines in the file.
+
+  <Arguments>
+    filename:
+      The name of the file to line count.
+
+  <Exceptions>
+    TBD.
+
+  <Return>
+    A number representing lines found in the file.  If no
+    lines were found, then return 0.  
+  """
+  
   count = 0
   with open(filename) as f:
     for count, line in enumerate(f):
@@ -141,12 +157,47 @@ def filecount(filename):
 
 
 def get_file_modification_time(filename):
-    mtime = os.path.getmtime(filename)
-    rtime = time.ctime(mtime)
-    return rtime
+  """
+  <Purpose>
+    Takes a filename and find the last modification time
+    of this file.
+
+  <Arguments>
+    filename:
+      The name of the file to find last modification time on. 
+
+  <Exceptions>
+    TBD.
+
+  <Return>
+    The time is returned.  The time is formatted as: 
+    " Thu Nov 26 17:47:35 2015"
+  """
+
+  mtime = os.path.getmtime(filename)
+  rtime = time.ctime(mtime)
+  return rtime
 
 
 def word_found_in_file(filename, word):
+  """
+  <Purpose>
+    Helps to check if a keyword is found in a file. 
+
+  <Arguments>
+    filename:
+      The name of the file for the keyword check. 
+    word:
+      The keyword that will be used to search in the file.
+
+  <Exceptions>
+    TBD.
+
+  <Return>
+    True is returned when the word is available, otherwise
+    a False is returned.
+  """
+
   with open(filename) as f:
     for line in f:
       if (word in line):

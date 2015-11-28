@@ -128,3 +128,58 @@ def write_to_file(string_to_write, filename):
   fileobj = open(filename, "w")
   fileobj.write(string_to_write)
   fileobj.close()
+
+
+def default_out_parser(metadata_dict, out_filename):
+  """
+  <Purpose>
+    Reads through a specified output file, searches for related terms 
+    corresponding to the categories of failure, warning and success, and records
+    the lines and line numbers in which these terms appear.
+
+  <Arguments>
+    metadata_dict:
+      The dictionary in which we are storing our metadata.
+
+    filename:
+      A string for the path to the outfile we are parsing.
+
+  <Exceptions>
+    TBD.
+
+  <Return>
+    None.
+  """
+
+  # The wordlists used to check got success, failure and warnings
+  success_words = ["success", "succeed"]
+  failure_words = ["fail", "error", "fault"]
+  warning_words = ["warn", "alert", "caution"]
+
+  # Setup the dictionary with lists for success/failure/warning occurences
+  metadata_dict["output_data"] = dict()
+  metadata_dict["output_data"]["success"] = list()
+  metadata_dict["output_data"]["failure"] = list()
+  metadata_dict["output_data"]["warning"] = list()
+
+  # Setup three variables to point to the lists for clarity 
+  success_list = metadata_dict["output_data"]["success"]
+  failure_list = metadata_dict["output_data"]["failure"]
+  warning_list = metadata_dict["output_data"]["warning"]
+
+  # Read through the file and add lines to the corresponding lists
+  out_fileobj = open(out_filename, "r")
+  line_num = 0
+  for line in out_fileobj:
+    line_num += 1
+    dict_to_add = dict()
+    dict_to_add["line"] = line
+    dict_to_add["line_number"] = line_num
+    if any(word in line for word in success_words):
+      success_list.append(dict_to_add)
+    else if any(word in line for word in failure_list):
+      failure_list.append(dict_to_add)
+    else if any(word in line for word in warning_list):
+      warning_list.append(dict_to_add)
+
+  out_fileobj.close()

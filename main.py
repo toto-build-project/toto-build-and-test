@@ -79,6 +79,7 @@ def main():
   process_env_vars(metadata)
   stdout, stderr = exec_cmd(cmd_string, set_stdin, input_filepath)
   process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, stderr, details)
+  default_out_parser(metadata, "out")
 
   # Generate the signed JSON
   signed_metadata = signing.sign_json(metadata)
@@ -114,7 +115,7 @@ def exec_cmd(cmd_string, set_stdin, input_filepath):
       stderr=subprocess.PIPE, shell=True)
     input_fileobj.close()
   else:
-    cmd_process = ubprocess.Popen(cmd_string, stdout=subprocess.PIPE, 
+    cmd_process = subprocess.Popen(cmd_string, stdout=subprocess.PIPE, 
       stderr=subprocess.PIPE, shell=True)
   return cmd_process.communicate()
 
@@ -211,5 +212,76 @@ def process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, st
   metadata['application']['err_path'] = saved_err_path
 
   metadata['application']['details'] = details
+
+
+def default_out_parser(metadata_dict, out_filename):
+  """
+  <Purpose>
+    Reads through a specified output file, searches for related terms 
+    corresponding to the categories of failure, warning and success, and records
+    the lines and line numbers in which these terms appear.
+
+  <Arguments>
+    metadata_dict:
+      The dictionary in which we are storing our metadata.
+
+    filename:
+      A string for the path to the outfile we are parsing.
+
+  <Exceptions>
+    TBD.
+
+  <Return>
+    None.
+  """
+
+  # The wordlists used to check got success, failure and warnings
+  success_words = ["success", "succeed"]
+  failure_words = ["fail", "error", "fault"]
+  warning_words = ["warn", "alert", "caution"]
+
+  # Setup the dictionary with lists for success/failure/warning occurences
+  metadata_dict["output_data"] = dict()
+  metadata_dict["output_data"]["success"] = dict()
+  metadata_dict["output_data"]["failure"] = dict()
+  metadata_dict["output_data"]["warning"] = dict()
+  metadata_dict["output_data"]["success"]["instances"] = list()
+  metadata_dict["output_data"]["failure"]["instances"] = list()
+  metadata_dict["output_data"]["warning"]["instances"] = list()
+
+  # Setup three variables to point to the lists and for clarity 
+  success_list = metadata_dict["output_data"]["success"]["instances"]
+  failure_list = metadata_dict["output_data"]["failure"]["instances"]
+  warning_list = metadata_dict["output_data"]["warning"]["instances"]
+
+  # Read through the file and add lines to the corresponding lists
+  out_fileobj = open(out_filename, "r")
+  line_num = 0
+  success_count = 0
+  failure_count = 0
+  warning_count = 0
+  for line in out_fileobj:
+    line_num += 1
+    line_lower = line.lower()
+    dict_to_add = dict()
+    dict_to_add["line"] = line
+    dict_to_add["line_number"] = line_num
+    if any(word in line_lower for word in success_words):
+      success_list.append(dict_to_add)
+      success_count += 1
+    elif any(word in line_lower for word in failure_words):
+      failure_list.append(dict_to_add)
+      failure_count += 1
+    elif any(word in line_lower for word in warning_words):
+      warning_list.append(dict_to_add)
+      warning_count += 1
+
+  # Add the counts to the dictionary
+  metadata_dict["output_data"]["success"]["count"] = success_count
+  metadata_dict["output_data"]["failure"]["count"] = failure_count
+  metadata_dict["output_data"]["warning"]["count"] = warning_count
+
+  out_fileobj.close()
+
 
 main()

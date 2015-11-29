@@ -242,18 +242,24 @@ def default_out_parser(metadata_dict, out_filename):
 
   # Setup the dictionary with lists for success/failure/warning occurences
   metadata_dict["output_data"] = dict()
-  metadata_dict["output_data"]["success"] = list()
-  metadata_dict["output_data"]["failure"] = list()
-  metadata_dict["output_data"]["warning"] = list()
+  metadata_dict["output_data"]["success"] = dict()
+  metadata_dict["output_data"]["failure"] = dict()
+  metadata_dict["output_data"]["warning"] = dict()
+  metadata_dict["output_data"]["success"]["instances"] = list()
+  metadata_dict["output_data"]["failure"]["instances"] = list()
+  metadata_dict["output_data"]["warning"]["instances"] = list()
 
-  # Setup three variables to point to the lists for clarity 
-  success_list = metadata_dict["output_data"]["success"]
-  failure_list = metadata_dict["output_data"]["failure"]
-  warning_list = metadata_dict["output_data"]["warning"]
+  # Setup three variables to point to the lists and for clarity 
+  success_list = metadata_dict["output_data"]["success"]["instances"]
+  failure_list = metadata_dict["output_data"]["failure"]["instances"]
+  warning_list = metadata_dict["output_data"]["warning"]["instances"]
 
   # Read through the file and add lines to the corresponding lists
   out_fileobj = open(out_filename, "r")
   line_num = 0
+  success_count = 0
+  failure_count = 0
+  warning_count = 0
   for line in out_fileobj:
     line_num += 1
     line_lower = line.lower()
@@ -262,10 +268,18 @@ def default_out_parser(metadata_dict, out_filename):
     dict_to_add["line_number"] = line_num
     if any(word in line_lower for word in success_words):
       success_list.append(dict_to_add)
+      success_count += 1
     elif any(word in line_lower for word in failure_words):
       failure_list.append(dict_to_add)
+      failure_count += 1
     elif any(word in line_lower for word in warning_words):
       warning_list.append(dict_to_add)
+      warning_count += 1
+
+  # Add the counts to the dictionary
+  metadata_dict["output_data"]["success"]["count"] = success_count
+  metadata_dict["output_data"]["failure"]["count"] = failure_count
+  metadata_dict["output_data"]["warning"]["count"] = warning_count
 
   out_fileobj.close()
 

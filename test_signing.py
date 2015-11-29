@@ -90,7 +90,7 @@ class TestSigningMethods(unittest.TestCase):
     signing.sign_json(test_data["data"].copy())
     time2 = utils.get_file_modification_time(KEYFILE)
     count2 = utils.file_line_counter(KEYFILE)
-
+ 
     # Raise an error if the keystore file hasn't updated after signing.
     self.assertTrue(time1 < time2, "The " + KEYFILE + " file was NOT updated after signing") 
     # Raise an error if the keystore does not contain at least 1 entry 

@@ -170,13 +170,12 @@ def get_file_modification_time(filename):
     TBD.
 
   <Return>
-    The time is returned.  The time is formatted as: 
-    " Thu Nov 26 17:47:35 2015"
+    The modification time is returned (secs from epoch).  
+    The time is formatted as: "1448502239.82".
   """
 
   mtime = os.path.getmtime(filename)
-  rtime = time.ctime(mtime)
-  return rtime
+  return mtime
 
 
 def word_found_in_file(filename, word):

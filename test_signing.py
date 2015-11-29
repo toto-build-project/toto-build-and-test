@@ -52,13 +52,14 @@ class TestSigningMethods(unittest.TestCase):
 
   def test_sign_json(self):
     # This function verifies sign_json values are correct.  
-    # The return_data fields are checked to confirm populated
-    # and modified to erase fields to confirm exceptions raised.
+    # The return_data fields are checked to confirm they are 
+    # populated and tests will modify or erase fields to 
+    # confirm exceptions are raised.
 
     # Validate that the test_data and return_data are equal, to 
     # ensure data is prepared correctly for checks.
     self.assertTrue("cdata" in return_data, "The results could not be added after sign_json")
-    self.assertEqual(test_data["data"], return_data["cdata"], "Compare data and return_data are not updated to reflect key, sig fields.")
+    self.assertEqual(test_data["data"], return_data["cdata"], "Compare data and return_data are equal, must reflect key, sig changes.")
 
     # Validate Signed fields (public, private) are populated 
     # and good length.
@@ -73,7 +74,7 @@ class TestSigningMethods(unittest.TestCase):
     self.assertTrue(len(return_data["cdata"]["signatures"]["keyid"])>0, "Signature key length must be greater than 0")
 
     ## CE- WL, if the private key missing - no exception(check sign doc)
-    # Add invalid public key.  Should raise an exception.
+    # Add invalid public key.  This should raise an exception.
     xdata = test_data["data"].copy()
     del xdata["signed"]["keyval"]["private"]
     signing.sign_json(xdata)
@@ -118,25 +119,25 @@ class TestSigningMethods(unittest.TestCase):
     # Add a Name field.  This should return false.
     self.assertFalse(return_verify, "Verify json test did not return false on invalid data")
 
-    # Delete the name field.  Should return true.
+    # Delete the name field.  This should return true.
     xdata = return_data["cdata"].copy()
     json_xdata_string = json.encode_pretty_printed_json(xdata)
     return_verify = signing.verify_json(json_xdata_string)
     self.assertTrue(return_verify, "JSON reverted back, should return true.")
 
-    # Add invalid public key.  Should raise an exception.
+    # Add invalid public key.  This should raise an exception.
     xdata = return_data["cdata"].copy()
     xdata["signed"]["keyval"]["public"] = "000234234243adsfadfasd"
     json_xdata_string = json.encode_pretty_printed_json(xdata)
     self.assertRaises(tuf.CryptoError, signing.verify_json, json_xdata_string)
 
-    # Add invalid private key.  Should raise an exception.
+    # Add invalid private key.  This should raise an exception.
     xdata = return_data["cdata"].copy()
     xdata["signed"]["keyval"]["private"] = "000234234243adsfadfasd"
     json_xdata_string = json.encode_pretty_printed_json(xdata)
     self.assertRaises(tuf.CryptoError, signing.verify_json, json_xdata_string)
 
-    # Add invalid signature sig key.  Should raise an exception.
+    # Add invalid signature sig key.  This should raise an exception.
     xdata = return_data["cdata"].copy()
     xdata["signatures"]["sig"] = "000234234243adfadfadbcs"
     json_xdata_string = json.encode_pretty_printed_json(xdata)
@@ -148,7 +149,7 @@ class TestSigningMethods(unittest.TestCase):
     json_xdata_string = json.encode_pretty_printed_json(xdata)
     self.assertRaises(tuf.CryptoError, signing.verify_json, json_xdata_string)
 
-    # Add invalid signature keyid key.  Should raise an exception.
+    # Add invalid signature keyid key.  This should raise an exception.
     xdata = return_data["cdata"].copy()
     xdata["signatures"]["keyid"] = "000234234243adfadfadbcs"
     json_xdata_string = json.encode_pretty_printed_json(xdata)

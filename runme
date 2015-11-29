@@ -3,6 +3,7 @@
   #CMD="python main.py \"python tests/test.py tests/test_in.txt\"  - \"main_pgm_detail_args\""
   #CMD="python main.py \"cd tuf; sudo python setup.py install\"  - \"main_pgm_detail_args\""
   CMD="python main.py \"cd tuf; sudo python setup.py build\"  - \"main_pgm_detail_args\""
+  CMD="python main.py \"cd examples/c_code_proj; ./makefile\"  - \"main_pgm_detail_args\""
   
   # calling toto sample project
   echo $CMD

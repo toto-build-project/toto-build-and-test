@@ -26,7 +26,8 @@
 
 import canonicaljson as json
 import hashlib
-import os.path, time
+import os.path
+import time
 
 def count_string(s, substring):
   """

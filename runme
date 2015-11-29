@@ -1,8 +1,8 @@
   # write python command
-  echo "python main.py \"python tests/test.py\" tests/test_in.txt \"hi_main_pgm\""
+  echo "python main.py \"python tests/test.py\" tests/test_in.txt"
 
   # calling toto sample project
-  python main.py "python tests/test.py" tests/test_in.txt "hi_main_pgm"
+  python main.py "python tests/test.py" tests/test_in.txt
 
   # write cat file command
   echo "Executing [cat metadata.json], output:  >> "

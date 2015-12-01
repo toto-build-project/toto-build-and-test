@@ -20,7 +20,7 @@
   development phases. This script represents the backbone of this application. 
   This script is called as below:
 
-  python main.py <cmd_string> <input_filepath> <details>
+  python main.py <cmd_string> <input_filepath>
 
   Where:
     <cmd_string> -> the command to be executed for the build/test you want to 
@@ -29,10 +29,6 @@
     <input_filepath> -> optional; a filepath for the file from which the stdin 
       should come; if opting to not use this arg, provide the dash character (-)
       in this space
-    <details> -> any extra details the developer may wish to provide to be 
-      included in the metadata file (e.g. software version; developer's not to 
-      the user, etc); should be encapsulated within quotes ("") if multiple
-      words
 """
 
 import subprocess
@@ -63,7 +59,6 @@ def main():
   # Grab the command line arguments
   cmd_string = sys.argv[1]
   input_filepath = sys.argv[2]
-  details = sys.argv[3]
 
   # Check if input file was explicitly specified
   set_stdin = True
@@ -78,7 +73,7 @@ def main():
   # Execute the given command and fill the metadata dict
   process_env_vars(metadata)
   stdout, stderr = exec_cmd(cmd_string, set_stdin, input_filepath)
-  process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, stderr, details)
+  process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, stderr)
   default_out_parser(metadata, "out", "output_data")
   default_out_parser(metadata, "err", "err_data")
 
@@ -152,7 +147,7 @@ def process_env_vars(metadata):
   metadata['variables']['user'] = getpass.getuser()
   metadata['variables']['curr_working_dir'] = os.getcwd()
 
-def process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, stderr, details):
+def process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, stderr):
   """
   <Purpose>
     Execute the given command and redirect input (as necessary).
@@ -177,9 +172,6 @@ def process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, st
 
     stderr:
       A string representing the stderr from the command that was run.
-
-    details:
-      A string representing the miscellaneous details provided by the developer.
 
   <Exceptions>
     TBD.
@@ -211,8 +203,6 @@ def process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, st
   utils.write_to_file(stderr, saved_err_path)
   metadata['application']['err_hash'] = utils.get_hash(saved_err_path)
   metadata['application']['err_path'] = saved_err_path
-
-  metadata['application']['details'] = details
 
 
 def default_out_parser(metadata_dict, filename, metadata_category):

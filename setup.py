@@ -54,7 +54,7 @@ setup(
     'Programming Lanugae :: Python :: 2',
     'Programming Language :: Python :: 2.7'
   ],
-  keywords='testing verification',
+  keywords='testing verification framework',
   packages = find_packages(exclude=['tests', 'excludes/c_code_proj']),
   install_requires=[
     'tuf',

@@ -56,5 +56,12 @@ setup(
   ],
   keywords='testing verification',
   packages = find_packages(exclude=['tests', 'excludes/c_code_proj']),
-  install_requires=['tuf', 'hashlib', 'pycrypto']
+  install_requires=[
+    'tuf',
+    'hashlib',
+    'pycrypto',
+    'canonicaljson',
+    'getpass'
+
+  ]
   )

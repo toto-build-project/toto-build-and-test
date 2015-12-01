@@ -1,0 +1,5 @@
+# In order to run Toto properly, you must install the following dependencies.
+# To do this just type in the following command:
+# $ pip install -r requirements.txt
+
+canonicaljson

@@ -1,8 +1,13 @@
-  # write python command
-  echo "python main.py \"python tests/test.py\" tests/test_in.txt"
-
+#!/bin/bash
+  # setup sample execution commands
+  #CMD="python main.py \"python tests/test.py tests/test_in.txt\"  -"
+  #CMD="python main.py \"cd tuf; sudo python setup.py install\"  -"
+  CMD="python main.py \"cd tuf; sudo python setup.py build\"  -"
+  CMD="python main.py \"cd examples/c_code_proj; ./makefile\"  -"
+  
   # calling toto sample project
-  python main.py "python tests/test.py" tests/test_in.txt
+  echo $CMD
+  eval $CMD
 
   # write cat file command
   echo "Executing [cat metadata.json], output:  >> "

@@ -74,7 +74,8 @@ def main():
   process_env_vars(metadata)
   stdout, stderr = exec_cmd(cmd_string, set_stdin, input_filepath)
   process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, stderr)
-  default_out_parser(metadata, "out")
+  default_out_parser(metadata, "out", "output_data")
+  default_out_parser(metadata, "err", "err_data")
 
   # Generate the signed JSON
   signed_metadata = signing.sign_json(metadata)
@@ -204,7 +205,7 @@ def process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, st
   metadata['application']['err_path'] = saved_err_path
 
 
-def default_out_parser(metadata_dict, out_filename):
+def default_out_parser(metadata_dict, filename, metadata_category):
   """
   <Purpose>
     Reads through a specified output file, searches for related terms 
@@ -218,6 +219,9 @@ def default_out_parser(metadata_dict, out_filename):
     filename:
       A string for the path to the outfile we are parsing.
 
+    metadata_category:
+      A string for the upper level key to be used to store this data.
+
   <Exceptions>
     TBD.
 
@@ -226,31 +230,31 @@ def default_out_parser(metadata_dict, out_filename):
   """
 
   # The wordlists used to check got success, failure and warnings
-  success_words = ["success", "succeed"]
+  success_words = ["success", "succeed", "installed", "finished"]
   failure_words = ["fail", "error", "fault"]
   warning_words = ["warn", "alert", "caution"]
 
   # Setup the dictionary with lists for success/failure/warning occurences
-  metadata_dict["output_data"] = dict()
-  metadata_dict["output_data"]["success"] = dict()
-  metadata_dict["output_data"]["failure"] = dict()
-  metadata_dict["output_data"]["warning"] = dict()
-  metadata_dict["output_data"]["success"]["instances"] = list()
-  metadata_dict["output_data"]["failure"]["instances"] = list()
-  metadata_dict["output_data"]["warning"]["instances"] = list()
+  metadata_dict[metadata_category] = dict()
+  metadata_dict[metadata_category]["success"] = dict()
+  metadata_dict[metadata_category]["failure"] = dict()
+  metadata_dict[metadata_category]["warning"] = dict()
+  metadata_dict[metadata_category]["success"]["instances"] = list()
+  metadata_dict[metadata_category]["failure"]["instances"] = list()
+  metadata_dict[metadata_category]["warning"]["instances"] = list()
 
   # Setup three variables to point to the lists and for clarity 
-  success_list = metadata_dict["output_data"]["success"]["instances"]
-  failure_list = metadata_dict["output_data"]["failure"]["instances"]
-  warning_list = metadata_dict["output_data"]["warning"]["instances"]
+  success_list = metadata_dict[metadata_category]["success"]["instances"]
+  failure_list = metadata_dict[metadata_category]["failure"]["instances"]
+  warning_list = metadata_dict[metadata_category]["warning"]["instances"]
 
   # Read through the file and add lines to the corresponding lists
-  out_fileobj = open(out_filename, "r")
+  fileobj = open(filename, "r")
   line_num = 0
   success_count = 0
   failure_count = 0
   warning_count = 0
-  for line in out_fileobj:
+  for line in fileobj:
     line_num += 1
     line_lower = line.lower()
     dict_to_add = dict()
@@ -267,11 +271,11 @@ def default_out_parser(metadata_dict, out_filename):
       warning_count += 1
 
   # Add the counts to the dictionary
-  metadata_dict["output_data"]["success"]["count"] = success_count
-  metadata_dict["output_data"]["failure"]["count"] = failure_count
-  metadata_dict["output_data"]["warning"]["count"] = warning_count
+  metadata_dict[metadata_category]["success"]["count"] = success_count
+  metadata_dict[metadata_category]["failure"]["count"] = failure_count
+  metadata_dict[metadata_category]["warning"]["count"] = warning_count
 
-  out_fileobj.close()
+  fileobj.close()
 
 
 main()

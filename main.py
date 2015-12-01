@@ -231,7 +231,7 @@ def default_out_parser(metadata_dict, filename, metadata_category):
 
   # The wordlists used to check got success, failure and warnings
   success_words = ["success", "succeed", "installed", "finished"]
-  failure_words = ["fail", "error", "fault"]
+  failure_words = ["fail", "error"]
   warning_words = ["warn", "alert", "caution"]
 
   # Setup the dictionary with lists for success/failure/warning occurences

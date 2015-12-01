@@ -60,8 +60,11 @@ setup(
     'tuf',
     'hashlib',
     'pycrypto',
-    'canonicaljson',
-    'getpass'
-
+    'canonicaljson'
+    'iso8601',
+    'six',
+    'pycrypto==2.6.1',
+    'pynacl==0.2.3',
+    'cryptography==1.0'
   ]
   )

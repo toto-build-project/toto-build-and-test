@@ -26,20 +26,6 @@ import tuf.util
 import canonicaljson as json
 
 
-def print_object(obj_desc, object):
-  # Return on prints, potentially remove this function
-  #return
-  verbose = 0
-  if (verbose != 0):
-  	return
-  print obj_desc + "\n==============================\n" 
-  print object
-  print "\n==============================\n" 
-
-
-
-
-
 def sign_json(data):
   """
   <Purpose>

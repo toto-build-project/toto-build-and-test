@@ -57,8 +57,5 @@ setup(
   ],
   keywords='testing verification framework',
   packages = find_packages(exclude=['tests', 'excludes/c_code_proj']),
-  install_requires=['tuf', 'canonicaljson'],
-  dependency_links=[
-    'https://pypi.python.org/packages/py2.py3/c/canonicaljson/canonicaljson-1.0.0-py2.py3-none-any.whl'
-  ]
+  install_requires=['tuf', 'canonicaljson']
   )

@@ -40,6 +40,9 @@ import utils
 import shutil
 import signing
 import argparse
+import re
+
+TOTO_TOOL_VERSION = 'Toto Build/Test Metadata Generator 0.4'
 
 def main():
   """
@@ -141,6 +144,7 @@ def process_env_vars(metadata):
   metadata['variables']['hostname'] = uname[1]
   metadata['variables']['cpu_arch'] = uname[4]
   metadata['variables']['timestamp'] = str(datetime.datetime.utcnow())
+  metadata['variables']['toto_tool_verion'] = TOTO_TOOL_VERSION
 
   # We use the getpass module here for Unix and Windows compatibility 
   metadata['variables']['user'] = getpass.getuser()
@@ -227,9 +231,9 @@ def default_parser(metadata_dict, filename, metadata_category):
   """
 
   # The wordlists used to check got success, failure and warnings
-  success_words = ["success", "succeed", "installed", "finished"]
-  failure_words = ["fail", "error"]
-  warning_words = ["warn", "alert", "caution"]
+  success_words = ["success", "succeed", "succeeded", "successfully", "installed", "finished"]
+  failure_words = ["fail", "failed", "failure", "error", "fault"]
+  warning_words = ["warn", "warning", "alert", "caution"]
 
   # Setup the dictionary with lists for success/failure/warning occurences
   metadata_dict[metadata_category] = dict()
@@ -247,6 +251,7 @@ def default_parser(metadata_dict, filename, metadata_category):
 
   # Read through the file and add lines to the corresponding lists
   fileobj = open(filename, "r")
+  regexobj = re.compile('[^a-zA-Z]')
   line_num = 0
   success_count = 0
   failure_count = 0
@@ -254,18 +259,21 @@ def default_parser(metadata_dict, filename, metadata_category):
   for line in fileobj:
     line_num += 1
     line_lower = line.lower()
+    line_lower_alpha = regexobj.sub(" ", line_lower)
+    tokens = line_lower_alpha.split()
     dict_to_add = dict()
     dict_to_add["line"] = line
     dict_to_add["line_number"] = line_num
-    if any(word in line_lower for word in success_words):
-      success_list.append(dict_to_add)
-      success_count += 1
-    elif any(word in line_lower for word in failure_words):
-      failure_list.append(dict_to_add)
-      failure_count += 1
-    elif any(word in line_lower for word in warning_words):
-      warning_list.append(dict_to_add)
-      warning_count += 1
+    for token in tokens:
+      if any(word == token for word in success_words):
+        success_list.append(dict_to_add)
+        success_count += 1
+      elif any(word == token for word in failure_words):
+        failure_list.append(dict_to_add)
+        failure_count += 1
+      elif any(word == token for word in warning_words):
+        warning_list.append(dict_to_add)
+        warning_count += 1
 
   # Add the counts to the dictionary
   metadata_dict[metadata_category]["success"]["count"] = success_count
@@ -291,7 +299,7 @@ def get_command_line_args():
     An object representing the command line arguments.
   """
   parser = argparse.ArgumentParser(prog='main.py', description='Captures the given build/test command\'s I/O and relevant system details.')
-  parser.add_argument('--version', action='version', version='Toto Build/Test Metadata Generator 0.4')
+  parser.add_argument('--version', action='version', version=TOTO_TOOL_VERSION)
   parser.add_argument('--input', metavar='FILEPATH', help='the path to the desired input file to be routed through stdin')
   parser.add_argument('--policy', metavar='FILENAME', help='the path to the desired file specifying build/test policy')
   parser.add_argument('command', metavar='COMMAND', type=str, help='the bash command to execute the build or test')

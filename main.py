@@ -74,8 +74,8 @@ def main():
   process_env_vars(metadata)
   stdout, stderr = exec_cmd(cmd_string, input_filepath)
   process_app_data(metadata, cmd_string, input_filepath, stdout, stderr)
-  default_out_parser(metadata, "out", "output_data")
-  default_out_parser(metadata, "err", "err_data")
+  default_parser(metadata, "out", "output_data")
+  default_parser(metadata, "err", "err_data")
 
   # Generate the signed JSON
   signed_metadata = signing.sign_json(metadata)
@@ -202,7 +202,7 @@ def process_app_data(metadata, cmd_string, input_filepath, stdout, stderr):
   metadata['application']['err_path'] = saved_err_path
 
 
-def default_out_parser(metadata_dict, filename, metadata_category):
+def default_parser(metadata_dict, filename, metadata_category):
   """
   <Purpose>
     Reads through a specified output file, searches for related terms 
@@ -276,6 +276,20 @@ def default_out_parser(metadata_dict, filename, metadata_category):
 
 
 def get_command_line_args():
+  """
+  <Purpose>
+    Uses the argparse module to parse, process and return the command line 
+    arguments.
+
+  <Arguments>
+    None.
+
+  <Exceptions>
+    TBD.
+
+  <Return>
+    An object representing the command line arguments.
+  """
   parser = argparse.ArgumentParser(prog='main.py', description='Captures the given build/test command\'s I/O and relevant system details.')
   parser.add_argument('--version', action='version', version='Toto Build/Test Metadata Generator 0.4')
   parser.add_argument('--input', metavar='FILEPATH', help='the path to the desired input file to be routed through stdin')

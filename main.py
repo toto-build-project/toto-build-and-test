@@ -39,6 +39,7 @@ import getpass
 import utils
 import shutil
 import signing
+import argparse
 
 def main():
   """
@@ -56,14 +57,13 @@ def main():
     None.
   """
 
-  # Grab the command line arguments
-  cmd_string = sys.argv[1]
-  input_filepath = sys.argv[2]
+  # Setup the command line parser
+  args = get_command_line_args()
 
-  # Check if input file was explicitly specified
-  set_stdin = True
-  if input_filepath.strip() == '-':
-    set_stdin = False
+  # Grab the command line arguments
+  cmd_string = args.command
+  input_filepath = args.input
+  policy_filepath = args.policy
 
   # Setup the metadata dictionary
   metadata = dict()
@@ -72,8 +72,8 @@ def main():
 
   # Execute the given command and fill the metadata dict
   process_env_vars(metadata)
-  stdout, stderr = exec_cmd(cmd_string, set_stdin, input_filepath)
-  process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, stderr)
+  stdout, stderr = exec_cmd(cmd_string, input_filepath)
+  process_app_data(metadata, cmd_string, input_filepath, stdout, stderr)
   default_out_parser(metadata, "out", "output_data")
   default_out_parser(metadata, "err", "err_data")
 
@@ -81,7 +81,8 @@ def main():
   signed_metadata = signing.sign_json(metadata)
   utils.gen_json(signed_metadata, "metadata")
 
-def exec_cmd(cmd_string, set_stdin, input_filepath):
+
+def exec_cmd(cmd_string, input_filepath):
   """
   <Purpose>
     Execute the given command and redirect input (as necessary).
@@ -91,12 +92,9 @@ def exec_cmd(cmd_string, set_stdin, input_filepath):
       A string of the command provided to execute the build or test (e.g. 
       "python test.py", "make").
 
-    set_stdin:
-      A Boolean flag dictating whether or not stdin needs to be specified.
-
     input_filepath:
-      The filepath of the file from which stdin should be read; will be "-" in 
-      the case of set_stdin = False.
+      The filepath of the file from which stdin should be read; will be None if 
+      no explicit file specified
 
   <Exceptions>
     TBD.
@@ -105,7 +103,7 @@ def exec_cmd(cmd_string, set_stdin, input_filepath):
     A tuple of strings: (stdout, stderr).
   """
 
-  if set_stdin:
+  if input_filepath:
     input_fileobj = open(input_filepath,"r")
     cmd_process = subprocess.Popen(cmd_string, stdin=input_fileobj, stdout=subprocess.PIPE, 
       stderr=subprocess.PIPE, shell=True)
@@ -114,6 +112,7 @@ def exec_cmd(cmd_string, set_stdin, input_filepath):
     cmd_process = subprocess.Popen(cmd_string, stdout=subprocess.PIPE, 
       stderr=subprocess.PIPE, shell=True)
   return cmd_process.communicate()
+
 
 def process_env_vars(metadata):
   """
@@ -147,7 +146,8 @@ def process_env_vars(metadata):
   metadata['variables']['user'] = getpass.getuser()
   metadata['variables']['curr_working_dir'] = os.getcwd()
 
-def process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, stderr):
+
+def process_app_data(metadata, cmd_string, input_filepath, stdout, stderr):
   """
   <Purpose>
     Execute the given command and redirect input (as necessary).
@@ -160,12 +160,9 @@ def process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, st
       A string of the command that was provided to execute the build or test 
       (e.g. "python test.py", "make").
 
-    set_stdin:
-      A Boolean flag dictating whether or not stdin needs to be specified.
-
     input_filepath:
-      The filepath of the file from which stdin should be read; will be "-" in 
-      the case of set_stdin = False.
+      The filepath of the file from which stdin should be read; will be None if 
+      no explicit file specified
 
     stdout:
       A string representing the stdout from the command that was run.
@@ -186,7 +183,7 @@ def process_app_data(metadata, cmd_string, set_stdin, input_filepath, stdout, st
 
   # For the stdin, stdout and stderr, write each to a file, hash it, and store 
   # the hash and filepath to the metadata
-  if set_stdin:
+  if input_filepath:
     saved_input_path = os.path.join(cwd,"in")
     shutil.copyfile(input_filepath, saved_input_path)
     metadata['application']['input_hash'] = utils.get_hash(saved_input_path)
@@ -276,6 +273,16 @@ def default_out_parser(metadata_dict, filename, metadata_category):
   metadata_dict[metadata_category]["warning"]["count"] = warning_count
 
   fileobj.close()
+
+
+def get_command_line_args():
+  parser = argparse.ArgumentParser(prog='main.py', description='Captures the given build/test command\'s I/O and relevant system details.')
+  parser.add_argument('--version', action='version', version='Toto Build/Test Metadata Generator 0.4')
+  parser.add_argument('--input', metavar='FILEPATH', help='the path to the desired input file to be routed through stdin')
+  parser.add_argument('--policy', metavar='FILENAME', help='the path to the desired file specifying build/test policy')
+  parser.add_argument('command', metavar='COMMAND', type=str, help='the bash command to execute the build or test')
+
+  return parser.parse_args()
 
 
 main()

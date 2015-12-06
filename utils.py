@@ -79,30 +79,6 @@ def gen_json(metadata_dict, metadata_name):
   fileobj.close()
 
 
-def json_to_dict(json_filepath):
-  """
-  <Purpose>
-    Takes a file in JSON format and returns a dictionary reflecting the data in 
-    this JSON file.
-
-  <Arguments>
-    json_filepath:
-      The string representing the filepath to the desired JSON file.
-
-  <Exceptions>
-    TBD.
-
-  <Return>
-    A dictionary representingthe data in the given JSON file.
-  """
-
-  fileobj = open(json_filepath, "r")
-  json_dict = json.load(fileobj)
-  fileobj.close()
-
-  return json_dict
-
-
 def get_hash(filename):
   """
   <Purpose>

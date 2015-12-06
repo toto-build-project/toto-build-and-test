@@ -41,6 +41,7 @@ import shutil
 import signing
 import argparse
 import re
+import tuf
 
 TOTO_TOOL_VERSION = "Toto Build/Test Metadata Generator 0.4"
 DEFAULT_POLICY_FILENAME = "default_policy.json"
@@ -347,7 +348,7 @@ def process_policy_file(metadata_dict, policy_filepath):
   """
 
   # Load the JSON into a dictionary
-  policy_dict = utils.json_to_dict(policy_filepath)
+  policy_dict = tuf.util.load_json_file(policy_filepath)
 
   # Check the constraints
   if policy_dict['constraints']['return_code']:

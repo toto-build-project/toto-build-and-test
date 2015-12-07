@@ -1,2 +1,3 @@
-g++ main.cpp -o test -w -fpermissive -v
+default:
+	g++ main.cpp -o test -w -fpermissive -v
 

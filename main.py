@@ -20,15 +20,19 @@
   development phases. This script represents the backbone of this application. 
   This script is called as below:
 
-  python main.py <cmd_string> <input_filepath>
+  usage: main.py [-h] [--version] [--input FILEPATH] [--policy FILENAME] COMMAND
 
-  Where:
-    <cmd_string> -> the command to be executed for the build/test you want to 
-      metadata about; should be encapsulated within quotes ("") if multiple
-      words
-    <input_filepath> -> optional; a filepath for the file from which the stdin 
-      should come; if opting to not use this arg, provide the dash character (-)
-      in this space
+  Captures the given build/test command's I/O and relevant system details.
+
+  positional arguments:
+    COMMAND            the bash command to execute the build or test
+
+  optional arguments:
+    -h, --help         show this help message and exit
+    --version          show program's version number and exit
+    --input FILEPATH   the path to the desired input file to be routed through
+                       stdin
+    --policy FILENAME  the path to the desired file specifying build/test policy
 """
 
 import subprocess

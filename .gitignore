@@ -3,5 +3,7 @@ err
 in
 out
 *.json
+!default_policy.json
 *~
 *.log
+keystore.txt

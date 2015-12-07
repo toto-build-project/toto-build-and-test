@@ -24,7 +24,8 @@
   filename.
 """
 
-import canonicaljson as json
+import canonicaljson
+import json
 import hashlib
 import os.path
 import time
@@ -50,6 +51,7 @@ def count_string(s, substring):
   s = s.lower()
   return s.count(substring)
 
+
 def gen_json(metadata_dict, metadata_name):
   """
   <Purpose>
@@ -73,7 +75,7 @@ def gen_json(metadata_dict, metadata_name):
 
   filename = metadata_name + '.json'
   fileobj = open(filename, 'w')
-  fileobj.write(json.encode_pretty_printed_json(metadata_dict))
+  fileobj.write(canonicaljson.encode_pretty_printed_json(metadata_dict))
   fileobj.close()
 
 
@@ -106,6 +108,7 @@ def get_hash(filename):
     md5_hasher.update(data)
   fileobj.close()
   return md5_hasher.hexdigest()
+
 
 def write_to_file(string_to_write, filename):
   """
@@ -205,5 +208,3 @@ def word_found_in_file(filename, word):
         return True
   f.close()
   return False
-
-

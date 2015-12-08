@@ -12,8 +12,8 @@
 	"supplied_data": {
 		"software_version": null,
 		"word_lists": {
-			"failure": ["success", "succeed", "succeeded", "successfully", "installed", "finished"],
-			"success": ["fail", "failed", "failure", "error", "fault"],
+			"success": ["success", "succeed", "succeeded", "successfully", "installed", "finished"],
+			"failure": ["fail", "failed", "failure", "error", "fault"],
 			"warning": ["warn", "warning", "alert", "caution"]
 		}
 	}

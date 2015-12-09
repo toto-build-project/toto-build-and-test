@@ -12,7 +12,7 @@
 	"supplied_data": {
 		"software_version": null,
 		"word_lists": {
-			"success": ["success", "succeed", "succeeded", "successfully", "installed", "finished"],
+			"success": ["success", "succeed", "succeeded", "successfully", "installed", "finished", "pass", "passed"],
 			"failure": ["fail", "failed", "failure", "error", "fault"],
 			"warning": ["warn", "warning", "alert", "caution"]
 		}

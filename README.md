@@ -14,7 +14,7 @@ The build of a piece of software will generate output and/or log data containing
 
 
 ### III. Verification of Build
-Information about a piece of software’s build process can strongly influence the end-user’s faith in the software’s reliability and authenticity. As such, our tool will provide signed metadata files (in the JSON format similar to that of the TUF project) detailing certain key points of information. Our tool will parse the specification files (e.g. makefile) of common build systems, like Maven or Make, as well as the build output, and extract relevant information, such as a build timestamp, version information, programming language, compiler, as well as build environment details (e.g. host operating system). This parsed information will then be passed to our central module which will generate and sign a JSON file in the appropriate format.
+Information about a piece of software’s build process can strongly influence the end-user’s faith in the software’s reliability and authenticity. As such, our tool will provide signed metadata files (in the JSON format similar to that of the TUF project) detailing certain key points of information. Our tool will parse the specification files (e.g. makefile) of common build systems, like Maven or Make, as well as the build output, and extract relevant information, such as a build timestamp, version information, programming language, compiler, as well as build environment details (e.g. host operating system). This parsed information will then be passed to our central module (main.py) which will generate and sign a JSON file in the appropriate format.
 
 ### IV. Verification of Test
 Capturing test results is critical to the development process. The output from tests confirms an application’s expected behavior with actual behavior. This portion of our framework focuses on consolidating data from application tests and describing the results in JSON format. Similar to the build process, our tool will parse the output of the tests performed and pass the pertinent details to the central module to produce and sign the JSON file. Producing this metadata attests that the software has been through the testing cycle with the specified software, allowing a baseline of the successes and failures to be recorded.
@@ -33,7 +33,7 @@ For the architecture of the metadata signatures, we decided to use the TUF libra
 **Solution:** The metadata generated for the build or tests of the software will aggregate the number of successes, failures, and warnings that were produced during the building or testing of the software. The user can then determine based on these statistics whether or not the software is safe to use.
 
 **Problem:** How do we make sure that the metadata is not falsified by a malicious attacker?
-**Solution:** All of the metadata that is generated will be signed with the signatures included into the metadata file. The Toto framework can then verify if the signatures are valid for the metadata. See section 5. Signing Architecture for more information.
+**Solution:** All of the metadata that is generated will be signed with the signatures included into the metadata file. The Toto framework can then verify if the signatures are valid for the metadata. See section V. Signing Architecture for more information.
 
 **Problem:** How will we make sure that the metadata is signed by a trusted organization? <br>
 **Possible Solution:** A public key infrastructure can be implemented in which Toto will act as a validation authority. Toto will maintain a storage of key ids along with public keys for different trusted organizations. A possible solution for storage could be an online database. Each organization that wants to be publicly verifiable will have to have their keys registered with Toto. To sign metadata, the organization that is running the build or the tests will sign the metadata with their own private key. To verify the metadata publicly, Toto will check if the key id and public key is contained in its storage of keys as well as verifying the metadata and signature using the public key. This solution is currently not implemented in Toto but it may be integrated in the future along with the other phases within the Toto framework. 
@@ -55,12 +55,18 @@ The files are structured as: <br>
 In order to use Toto, the policy file needs to be configured. See section X. Policy File for more information regarding configuring it. If there are no particular constraints, the default policy file can be used out of the box. To run Toto, simply run the program using python while passing in a string as an argument that would contain the shell command used to either build or test your software. 
 
 ###### For example:
-python main.py “[command goes here]” --infile [file passed to command] --policy [alternate policy file] 
+python main.py “[command goes here]” --input [file passed to command] --policy [alternate policy file] <br>
+* Sample C example:  python main.py "cd examples/c_code_proj; ./makefile" 
 
 ###### Arguments:  
 * command - Mandatory field.  Argument contains executing command <br>
-* infile - Optional field.  Argument is passed to the command for execution <br>
+* input - Optional field.  Argument is passed to the command for execution <br>
 * policy - Optional field.  Default is “default_policy.json”, otherwise alternate policy specified here 
+
+###### Output Files:  
+* out - all stdout generated <br>
+* err - all stderr generated <br>
+* metadata.json - contains the generated json from build/test <br>
 
 
 ### X. Policy File
@@ -80,7 +86,7 @@ The policy file enables an organization to specify the constraints for the type 
    "supplied_data": {         
       "software_version": null,         
       "word_lists": {             
-         "success": ["success", "succeed", "succeeded", "successfully", "installed", "finished"],             
+         "success": ["success", "succeed", "succeeded", "successfully", "installed", "finished", "pass", "passed"],             
          "failure": ["fail", "failed", "failure", "error", "fault"],             
          "warning": ["warn", "warning", "alert", "caution"]         
       }     

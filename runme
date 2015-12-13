@@ -1,16 +1,18 @@
 #!/bin/bash
+  rm -rf work
   # setup sample execution commands
   #CMD="python main.py \"python tests/test.py tests/test_in.txt\"  "
   #CMD="python main.py \"cd tuf; sudo python setup.py install\"  "
   #CMD="python main.py \"cd tuf; sudo python setup.py build\"  "
   CMD="python main.py \"cd examples/c_code_proj; ./makefile\"  "
+  CMD="python main.py 'cd examples/c_code_proj; ./makefile'  --command_policy sample_command_policy.json "
   
   # calling toto sample project
   echo $CMD
   eval $CMD
 
   # write cat file command
-  echo "Executing [cat metadata.json], output:  >> "
-  cat metadata.json
+  echo "Executing [cat main_metadata.json], output:  >> "
+  cat work/main_metadata.json
 
 

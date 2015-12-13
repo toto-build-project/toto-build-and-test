@@ -52,28 +52,62 @@ import json
 
 TOTO_TOOL_VERSION = "Toto Build/Test Metadata Generator 0.4"
 DEFAULT_POLICY_FILENAME = "default_policy.json"
-DEFAULT_COMMAND_POLICY_FILENAME = "default_command_policy.json"
 DEFAULT_CUR_DIR = os.getcwd()
 DEFAULT_WORK_DIR = os.path.join(DEFAULT_CUR_DIR, "work")
 
 def main():
   # Setup the command line parser
   args = get_command_line_args()
+
+  # Read the commands and begin execution
   read_command_policy(args)
 
 
 def read_command_policy(args):
+  """
+  <Purpose>
+    This function reads and sets up the commands that will be executed.
+    Commands are either passed in:  1) via the command_policy file option
+    or 2) a single command in the COMMAND option.  The command_policy 
+    option will be more robust (ex: allows users to set the cmd_name, 
+    set a verify_command) while the single command omits these options.
+    Since the single command option does not allow a cmd_name to be 
+    specified, the output files for this option are prepended with
+    "generic" (ex: generic_metadata.json).
+ 
+    This function will create a list of executing commands and their 
+    attributes (cmd_name, verify_command, input_file), validate 
+    attributes, execute the command.  Take the hash value from the 
+    metatdata and create a cumulative hash.  These values are then 
+    stored into a main_metadata.json file.
+   
+    Note:  function asserts that cmd_name must be filled out 
+    for the command_policy option and if an input file is 
+    specified then it must exist else the program will exit.  
+
+  <Arguments>
+    args:
+      The arguments that are passed from the command line.
+
+  <Exceptions>
+    IOError: 
+      Returned if the input file does not exist.
+
+  <Returns>
+    None.
+  """
+
   commands = []
   # Setup the command policy here.  The user can either pass
-  # a file in from the commandline, otherwise pass a single 
-  # command line entry.
+  # a file in from the commandline (command_policy option), 
+  # otherwise pass a single command line entry.
   if args.command_policy:
     # Begin processing the commands from the command policy. 
     command_policy_filepath = args.command_policy
     commandList = tuf.util.load_json_file(command_policy_filepath)
     commands = commandList["commands"]
   else:
-    # If no command policy specified, read it from the commandline.
+    # The command is read from the commandline (COMMAND var).
     # We will autoname the file generic_metadata.json. 
     tmp_commands = [[args.command, None, "generic", args.input]]
     commands = json.dumps(tmp_commands)
@@ -88,9 +122,12 @@ def read_command_policy(args):
   # Begin to iterate through the commands.  First verify 
   # the command setup is valid, next process the actual command.
   for cmd_elem in commands:
-    # Validate the elements here.  
     cmd_name = cmd_elem[2]
-    assert(cmd_name != "main"), "Error: The cmd_name cannot equal 'main'."
+    # Check if the cmd_name is empty or is 'main'.  We need to use
+    # the cmd_name field when naming our metadata files so 
+    # make sure they are set here.
+    assert (cmd_name), "Error: The cmd_name cannot be null."
+    assert (cmd_name != "main"), "Error: The cmd_name cannot equal 'main'."
     # Validate the input file exists else flag an error.
     if (cmd_elem[3]):
       try:
@@ -122,12 +159,17 @@ def process_command(command, args_policy):
     for each command that will be processed.
 
   <Arguments>
-    None.
+    command:
+      Data object that contains the command, verify_command, 
+      command_name and input_file for the command.
+    args_policy:
+      Is the filepath of the passed in policy file from the 
+      commandline. 
 
   <Exceptions>
     TBD.
 
-  <Return>
+  <Returns>
     This function returns the hash value of the new <cmd_name>_metadata.json file
     and the path/name of metadata file.  
   """
@@ -158,9 +200,10 @@ def process_command(command, args_policy):
   process_app_data(metadata, cmd_string, input_filepath, cmd_name, stdout, stderr, return_code)
 
   # Execute the verify command
+  metadata["application"]["verify_cmd"] = cmd_to_verify
+  metadata["application"]["verify_cmd_return_code"] = ""
   if (cmd_to_verify != None):
     stdout, stderr, return_code = exec_cmd(cmd_to_verify, None)
-    metadata["application"]["verify_cmd"] = cmd_to_verify
     metadata["application"]["verify_cmd_return_code"] = "No|" + str(return_code) + "|" + stderr
     if return_code == 0:
       metadata["application"]["verify_cmd_return_code"] = "Yes|" + stdout
@@ -268,6 +311,10 @@ def process_app_data(metadata, cmd_string, input_filepath, cmd_name, stdout, std
     input_filepath:
       The filepath of the file from which stdin should be read; will be None if 
       no explicit file specified
+
+    cmd_name:
+      A string with a name description for this command.  This value is 
+      prepended to output files - err, out, and metatadata.
 
     stdout:
       A string representing the stdout from the command that was run.

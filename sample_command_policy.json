@@ -2,19 +2,19 @@
   "commands" : [
     [ 
         "cd examples/c_code_proj;  ./makefile",
-        null,
+        "ls -ltr examples/c_code_proj/test",
         "build_snap",
         "default_policy.json"
     ],
     [
         "cd examples/java_maven_proj;  mvn clean",
-        "ls -ltr target",
+        "ls -ltr examples/java_maven_proj/target",
         "build_main",
         "README.md"
     ],
     [
         "cd tuf; sudo python setup.py install",
-        "ls -ltr target",
+        null,
         "build_tuf_install",
         null
     ],

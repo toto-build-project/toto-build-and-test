@@ -1,0 +1,82 @@
+Description:
+  A sample java maven program created as a test example for Toto.
+  Currently executes a build of App/Utils and Junit test cases exist for both of these classes.
+-------------------------------------------------------------------------------------------
+
+I) For Build Example Only:
+   mvn clean -Dmaven.test.skip=true package
+•	Compiles and creates the target/*classes and also the “java_maven_proj-1.0-SNAPSHOT.jar” artifact
+•	Does not run test cases
+
+
+II) For Both Build and test Runs:  
+    mvn clean package
+
+III) Run the pgm:  
+    mvn exec:java
+
+
+IV) Sample out for “mvn clean package exec:java”:
+	cs-macbook-pro:java_maven_proj ceng$ mvn clean package exec:java
+	[INFO] Scanning for projects...
+	[INFO]                                                                         
+	[INFO] ------------------------------------------------------------------------
+	[INFO] Building java_maven_proj 1.0-SNAPSHOT
+	[INFO] ------------------------------------------------------------------------
+	[INFO] 
+	[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ java_maven_proj ---
+	[INFO] Deleting /AppSec/Toto/examples/java_maven_proj/target
+	[INFO] 
+	[INFO] --- maven-resources-plugin:2.4.3:resources (default-resources) @ java_maven_proj ---
+	[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+	[INFO] skip non existing resourceDirectory /AppSec/Toto/examples/java_maven_proj/src/main/resources
+	[INFO] 
+	[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ java_maven_proj ---
+	[WARNING] File encoding has not been set, using platform encoding UTF-8, i.e. build is platform dependent!
+	[INFO] Compiling 2 source files to /AppSec/Toto/examples/java_maven_proj/target/classes
+	[INFO] 
+	[INFO] --- maven-resources-plugin:2.4.3:testResources (default-testResources) @ java_maven_proj ---
+	[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+	[INFO] skip non existing resourceDirectory /AppSec/Toto/examples/java_maven_proj/src/test/resources
+	[INFO] 
+	[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ java_maven_proj ---
+	[WARNING] File encoding has not been set, using platform encoding UTF-8, i.e. build is platform dependent!
+	[INFO] Compiling 2 source files to /AppSec/Toto/examples/java_maven_proj/target/test-classes
+	[INFO] 
+	[INFO] --- maven-surefire-plugin:2.7.2:test (default-test) @ java_maven_proj ---
+	[INFO] Surefire report directory: /AppSec/Toto/examples/java_maven_proj/target/surefire-reports
+
+	-------------------------------------------------------
+	 T E S T S
+	-------------------------------------------------------
+	Running com.toto.buildAndTest.AppTest
+	Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.01 sec
+	Running com.toto.buildAndTest.UtilsTest
+	Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.05 sec
+
+	Results :
+
+	Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+
+	[INFO] 
+	[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ java_maven_proj ---
+	[INFO] Building jar: /AppSec/Toto/examples/java_maven_proj/target/java_maven_proj-1.0-SNAPSHOT.jar
+	[INFO] 
+	[INFO] >>> exec-maven-plugin:1.2.1:java (default-cli) @ java_maven_proj >>>
+	[INFO] 
+	[INFO] <<< exec-maven-plugin:1.2.1:java (default-cli) @ java_maven_proj <<<
+	[INFO] 
+	[INFO] --- exec-maven-plugin:1.2.1:java (default-cli) @ java_maven_proj ---
+
+	Successful Hello World - from the Toto Build and Test Team!
+	Current datetime: 2015/12/12 23:41:20
+	[INFO] ------------------------------------------------------------------------
+	[INFO] BUILD SUCCESS
+	[INFO] ------------------------------------------------------------------------
+	[INFO] Total time: 2.644s
+	[INFO] Finished at: Sat Dec 12 23:41:20 EST 2015
+	[INFO] Final Memory: 15M/114M
+	[INFO] ------------------------------------------------------------------------
+	cs-macbook-pro:java_maven_proj ceng$ 
+
+

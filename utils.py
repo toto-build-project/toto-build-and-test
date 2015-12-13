@@ -95,7 +95,7 @@ def get_hash(filename):
     A 32-character string (a 128-bit hash value).
   """
 
-  md5_hasher = hashlib.md5()
+  sha256_hasher = hashlib.sha256()
 
   # Read the file as bytes
   fileobj = open(filename,"rb")
@@ -105,9 +105,9 @@ def get_hash(filename):
     data = fileobj.read(128)
     if not data:
       break
-    md5_hasher.update(data)
+    sha256_hasher.update(data)
   fileobj.close()
-  return md5_hasher.hexdigest()
+  return sha256_hasher.hexdigest()
 
 
 def write_to_file(string_to_write, filename):

@@ -20,7 +20,7 @@
   development phases. This script represents the backbone of this application. 
   This script is called as below:
 
-  usage: main.py [-h] [--version] [--input FILEPATH] [--policy FILENAME] COMMAND
+  usage: main.py [-h] [--version] [--input FILEPATH] [--policy FILENAME] [--command_policy FILENAME] COMMAND
 
   Captures the given build/test command's I/O and relevant system details.
 
@@ -33,6 +33,7 @@
     --input FILEPATH   the path to the desired input file to be routed through
                        stdin
     --policy FILENAME  the path to the desired file specifying build/test policy
+    --command_policy FILENAME  the path to the desired file specifying command policy
 """
 
 import subprocess
@@ -46,15 +47,79 @@ import signing
 import argparse
 import re
 import tuf
+import hashlib
+import json
 
 TOTO_TOOL_VERSION = "Toto Build/Test Metadata Generator 0.4"
 DEFAULT_POLICY_FILENAME = "default_policy.json"
+DEFAULT_COMMAND_POLICY_FILENAME = "default_command_policy.json"
+DEFAULT_CUR_DIR = os.getcwd()
+DEFAULT_WORK_DIR = os.path.join(DEFAULT_CUR_DIR, "work")
 
 def main():
+  # Setup the command line parser
+  args = get_command_line_args()
+  read_command_policy(args)
+
+
+def read_command_policy(args):
+  commands = []
+  # Setup the command policy here.  The user can either pass
+  # a file in from the commandline, otherwise pass a single 
+  # command line entry.
+  if args.command_policy:
+    # Begin processing the commands from the command policy. 
+    command_policy_filepath = args.command_policy
+    commandList = tuf.util.load_json_file(command_policy_filepath)
+    commands = commandList["commands"]
+  else:
+    # If no command policy specified, read it from the commandline.
+    # We will autoname the file generic_metadata.json. 
+    tmp_commands = [[args.command, None, "generic", args.input]]
+    commands = json.dumps(tmp_commands)
+    commands = tuf.util.load_json_string(commands)
+
+
+  # Begin to verify and execute the commands.
+  cumulative_metadata_hash = ""
+  metadata_files_processed = dict()
+  sha256_hasher = hashlib.sha256()
+
+  # Begin to iterate through the commands.  First verify 
+  # the command setup is valid, next process the actual command.
+  for cmd_elem in commands:
+    # Validate the elements here.  
+    cmd_name = cmd_elem[2]
+    assert(cmd_name != "main"), "Error: The cmd_name cannot equal 'main'."
+    # Validate the input file exists else flag an error.
+    if (cmd_elem[3]):
+      try:
+        os.path.exists(cmd_elem[3])
+      except IOError:
+        print "Error:  The input file was specified, however it does not exist."
+
+
+    # Process the commands and create the metadata files here.
+    hash_metadata, metadata_filepath = process_command(cmd_elem, args.policy)
+    metadata_files_processed[cmd_name + "_metadata_path"] = metadata_filepath
+    metadata_files_processed[cmd_name + "_metadata_hash"] = hash_metadata
+
+    # Add to the hasher to calculate the cumulative hash of metadata files.
+    sha256_hasher.update(hash_metadata)
+    metadata_files_processed["cumulative_metadata_hash"] = sha256_hasher.hexdigest()
+    metadata_files_processed["timestamp"] = str(datetime.datetime.utcnow())
+    
+    # Sign the data and write to main_metadata.json.
+    signed_metadata = signing.sign_json(metadata_files_processed)
+    main_metadata_path = os.path.join(DEFAULT_WORK_DIR, "main_metadata")
+    utils.gen_json(signed_metadata, main_metadata_path)
+
+
+def process_command(command, args_policy):
   """
   <Purpose>
     Straightforward function to encapsulate the program's core logic. Called
-    at the end of this file.
+    for each command that will be processed.
 
   <Arguments>
     None.
@@ -63,21 +128,24 @@ def main():
     TBD.
 
   <Return>
-    None.
+    This function returns the hash value of the new <cmd_name>_metadata.json file
+    and the path/name of metadata file.  
   """
 
-  # Setup the command line parser
-  args = get_command_line_args()
-
   # Grab the command line arguments
-  cmd_string = args.command
-  input_filepath = args.input
+  cmd_string = command[0]
+  cmd_to_verify = command[1]
+  cmd_name = command[2]
+  input_filepath = command[3]
 
-  if args.policy:
-    policy_filepath = args.policy
+  # Setup the policy file which is either passed in from the commandline 
+  # otherwise, the default policy is used.
+  if args_policy:
+    policy_filepath = args_policy
   else:
     home_directory = os.path.dirname(os.path.realpath(__file__))
     policy_filepath = os.path.join(home_directory, DEFAULT_POLICY_FILENAME)
+
 
   # Setup the metadata dictionary
   metadata = dict()
@@ -87,14 +155,32 @@ def main():
   # Execute the given command and fill the metadata dict
   process_env_vars(metadata)
   stdout, stderr, return_code = exec_cmd(cmd_string, input_filepath)
-  process_app_data(metadata, cmd_string, input_filepath, stdout, stderr, return_code)
+  process_app_data(metadata, cmd_string, input_filepath, cmd_name, stdout, stderr, return_code)
+
+  # Execute the verify command
+  if (cmd_to_verify != None):
+    stdout, stderr, return_code = exec_cmd(cmd_to_verify, None)
+    metadata["application"]["verify_cmd"] = cmd_to_verify
+    metadata["application"]["verify_cmd_return_code"] = "No|" + str(return_code) + "|" + stderr
+    if return_code == 0:
+      metadata["application"]["verify_cmd_return_code"] = "Yes|" + stdout
+
+  # Process the policy file 
   policy_dict = process_policy_file(metadata, policy_filepath)
-  check_file_against_wordlists(metadata, policy_dict["supplied_data"]["word_lists"], "out", "output_data")
-  check_file_against_wordlists(metadata, policy_dict["supplied_data"]["word_lists"], "err", "err_data")
+  stdout_file = os.path.join(DEFAULT_WORK_DIR, cmd_name + "_out")
+  stderr_file = os.path.join(DEFAULT_WORK_DIR, cmd_name + "_err")
+  check_file_against_wordlists(metadata, policy_dict["supplied_data"]["word_lists"], stdout_file, "output_data")
+  check_file_against_wordlists(metadata, policy_dict["supplied_data"]["word_lists"], stderr_file, "err_data")
 
   # Generate the signed JSON
+  metadata_file = os.path.join(DEFAULT_WORK_DIR, cmd_name + "_metadata")
+  qualified_metadata_file = metadata_file + ".json"
   signed_metadata = signing.sign_json(metadata)
-  utils.gen_json(signed_metadata, "metadata")
+  utils.gen_json(signed_metadata, metadata_file)
+
+  # Return the hash of the <cmd_name>_metadata.json file
+  return (utils.get_hash(metadata_file + ".json"), qualified_metadata_file)
+
 
 
 def exec_cmd(cmd_string, input_filepath):
@@ -159,14 +245,14 @@ def process_env_vars(metadata):
   metadata['variables']['hostname'] = uname[1]
   metadata['variables']['cpu_arch'] = uname[4]
   metadata['variables']['timestamp'] = str(datetime.datetime.utcnow())
-  metadata['variables']['toto_tool_verion'] = TOTO_TOOL_VERSION
+  metadata['variables']['toto_tool_version'] = TOTO_TOOL_VERSION
 
   # We use the getpass module here for Unix and Windows compatibility 
   metadata['variables']['user'] = getpass.getuser()
   metadata['variables']['curr_working_dir'] = os.getcwd()
 
 
-def process_app_data(metadata, cmd_string, input_filepath, stdout, stderr, return_code):
+def process_app_data(metadata, cmd_string, input_filepath, cmd_name, stdout, stderr, return_code):
   """
   <Purpose>
     Execute the given command and redirect input (as necessary).
@@ -203,23 +289,27 @@ def process_app_data(metadata, cmd_string, input_filepath, stdout, stderr, retur
   metadata['application']['return_code'] = return_code
 
   cwd = os.getcwd()
+  work_cwd = os.path.join(cwd, DEFAULT_WORK_DIR)
+
+  # This is to write all files to work directory.  This should
+  # probably be created in the main function however.  
+  if not os.path.exists(work_cwd): 
+    os.mkdir(work_cwd)
 
   # For the stdin, stdout and stderr, write each to a file, hash it, and store 
   # the hash and filepath to the metadata
   if input_filepath:
-    saved_input_path = os.path.join(cwd,"in")
-    shutil.copyfile(input_filepath, saved_input_path)
-    metadata['application']['input_hash'] = utils.get_hash(saved_input_path)
-    metadata['application']['input_path'] = saved_input_path
+    metadata['application']['input_hash'] = utils.get_hash(input_filepath)
+    metadata['application']['input_path'] = input_filepath
   else:
     metadata['application']['input_hash'] = None
     metadata['application']['input_path'] = None
 
-  saved_output_path = os.path.join(cwd,"out")
+  saved_output_path = os.path.join(work_cwd, cmd_name + "_out")
   utils.write_to_file(stdout, saved_output_path)
   metadata['application']['output_hash'] = utils.get_hash(saved_output_path)
   metadata['application']['output_path'] = saved_output_path
-  saved_err_path = os.path.join(cwd,"err")
+  saved_err_path = os.path.join(work_cwd, cmd_name + "_err")
   utils.write_to_file(stderr, saved_err_path)
   metadata['application']['err_hash'] = utils.get_hash(saved_err_path)
   metadata['application']['err_path'] = saved_err_path
@@ -265,7 +355,6 @@ def check_file_against_wordlists(metadata_dict, word_lists, filename, metadata_c
   metadata_dict[metadata_category]["success"]["instances"] = list()
   metadata_dict[metadata_category]["failure"]["instances"] = list()
   metadata_dict[metadata_category]["warning"]["instances"] = list()
-
   # Setup three variables to point to the lists and for clarity 
   success_list = metadata_dict[metadata_category]["success"]["instances"]
   failure_list = metadata_dict[metadata_category]["failure"]["instances"]
@@ -326,6 +415,7 @@ def get_command_line_args():
   parser.add_argument('--version', action='version', version=TOTO_TOOL_VERSION)
   parser.add_argument('--input', metavar='FILEPATH', help='the path to the desired input file to be routed through stdin')
   parser.add_argument('--policy', metavar='FILENAME', help='the path to the desired file specifying build/test policy')
+  parser.add_argument('--command_policy', metavar='FILENAME', help='the path to the desired file command policy')
   parser.add_argument('command', metavar='COMMAND', type=str, help='the bash command to execute the build or test')
 
   return parser.parse_args()

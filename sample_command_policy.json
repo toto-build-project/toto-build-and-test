@@ -1,0 +1,28 @@
+{
+  "commands" : [
+    [ 
+        "cd examples/c_code_proj;  ./makefile",
+        null,
+        "build_snap",
+        "default_policy.json"
+    ],
+    [
+        "cd examples/java_maven_proj;  mvn clean",
+        "ls -ltr target",
+        "build_main",
+        "README.md"
+    ],
+    [
+        "cd tuf; sudo python setup.py install",
+        "ls -ltr target",
+        "build_tuf_install",
+        null
+    ],
+    [
+        "cd examples/c_code_proj;  ./makefile_err",
+        "ls -ltr testErr",
+        "build_snapErr",
+        null
+    ]
+  ]
+}

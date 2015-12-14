@@ -20,20 +20,21 @@
   development phases. This script represents the backbone of this application. 
   This script is called as below:
 
-  usage: main.py [-h] [--version] [--input FILEPATH] [--policy FILENAME] [--command_policy FILENAME] COMMAND
+  usage: main.py [-h] [--version] [--input FILEPATH] [--policy FILENAME] [--command_policy FILENAME or --command <arg>] 
 
   Captures the given build/test command's I/O and relevant system details.
 
   positional arguments:
-    COMMAND            the bash command to execute the build or test
-
+    --command_policy or --command must be specified.
+  
   optional arguments:
     -h, --help         show this help message and exit
     --version          show program's version number and exit
     --input FILEPATH   the path to the desired input file to be routed through
                        stdin
     --policy FILENAME  the path to the desired file specifying build/test policy
-    --command_policy FILENAME  the path to the desired file specifying command policy
+    --command_policy   FILENAME  the path to the desired file specifying command policy
+    --command          the bash command to execute the build or test
 """
 
 import subprocess
@@ -459,11 +460,13 @@ def get_command_line_args():
   """
 
   parser = argparse.ArgumentParser(prog='main.py', description='Captures the given build/test command\'s I/O and relevant system details.')
+  group = parser.add_mutually_exclusive_group(required=True)
+  group.add_argument('--command_policy', metavar='FILENAME', help='the path to the desired file command policy')
+  group.add_argument('--command', metavar='COMMAND', type=str, help='the bash command to execute the build or test')
+
   parser.add_argument('--version', action='version', version=TOTO_TOOL_VERSION)
   parser.add_argument('--input', metavar='FILEPATH', help='the path to the desired input file to be routed through stdin')
   parser.add_argument('--policy', metavar='FILENAME', help='the path to the desired file specifying build/test policy')
-  parser.add_argument('--command_policy', metavar='FILENAME', help='the path to the desired file command policy')
-  parser.add_argument('command', metavar='COMMAND', type=str, help='the bash command to execute the build or test')
 
   return parser.parse_args()
 

@@ -29,6 +29,11 @@ import json
 import hashlib
 import os.path
 import time
+import tuf
+
+METADATA_PATH_WORD = "_path"
+METADATA_CUMULATIVE_WORD = "cumulative_metadata_hash"
+
 
 def count_string(s, substring):
   """
@@ -208,3 +213,53 @@ def word_found_in_file(filename, word):
         return True
   f.close()
   return False
+
+
+def verify_metadatafiles(mainmeta_filepath):
+  """
+  <Purpose>
+    This function verifies the metadatafiles are correct. 
+    It will read the main_metadata file and parse 
+    through for the sub metadata files <name>_metadata.json.
+    The <name>_metadata.json files are hashed through
+    and the cumulative hash is compared to the one 
+    stored in main_metadata.  
+    
+    TBA:  Additional fields may be added in the future, 
+    this function to be updated with those changes.
+
+  <Arguments>
+    mainmeta_filepath:
+      The filepath of the main_metadata.json file.
+
+  <Exceptions>
+    IOError:  
+      Raised when the main_metadata.json is not available.
+
+  <Return>
+    True is returned when the hash is valid, otherwise 
+    a False is returned.
+  """
+
+  mainmeta_data = tuf.util.load_json_file(mainmeta_filepath)
+  cumulative_mainfile_hash = ""
+  sha256_hasher = hashlib.sha256()
+
+  for key, value in mainmeta_data.iteritems():
+    # Found_path checks the end of the key to see if keyword
+    # exists.  If it does, we want to pull the path's value
+    # to retrieve the file for hashing.
+    found_path = key[-(len(METADATA_PATH_WORD)):]  == METADATA_PATH_WORD
+
+    if (key == METADATA_CUMULATIVE_WORD):
+      cumulative_mainfile_hash = value;
+    if (found_path):
+      submetadata_filepath = value
+      hash_submetadata = utils.get_hash(submetadata_filepath)
+      sha256_hasher.update(hash_submetadata)
+
+  # After iterating through for all file hashes
+  cumulative_read_hashes = sha256_hasher.hexdigest()
+
+  return (cumulative_read_hashes == cumulative_mainfile_hash)
+

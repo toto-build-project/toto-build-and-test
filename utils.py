@@ -255,7 +255,7 @@ def verify_metadatafiles(mainmeta_filepath):
       cumulative_mainfile_hash = value;
     if (found_path):
       submetadata_filepath = value
-      hash_submetadata = utils.get_hash(submetadata_filepath)
+      hash_submetadata = get_hash(submetadata_filepath)
       sha256_hasher.update(hash_submetadata)
 
   # After iterating through for all file hashes

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include "counter.h"
 
 
 #define SECRET1 0x44
@@ -17,6 +18,7 @@ int main(int argc, char *argv[])
     int *secret;
     int int_input;
     int a, b, c, d;
+    int counter = 0;
     
     /* allocating size for a */
     a = (int *) malloc(20000*sizeof(int));
@@ -26,7 +28,10 @@ int main(int argc, char *argv[])
     secret[0] = SECRET1; secret[1] = SECRET2;
     
 
-  while (1) {
+  while (counter <= 5) {
+    printf("=====================================================\n");
+    printf("Calling getSumOfRange: %d\n", getSumOfRange(1,5));
+    printf("=====================================================\n");
     printf("The variable secret's address is 0x%8x|%d (on stack)\n", &secret), &secret;
     printf("The variable secret's value is 0x%8x|%d (on heap)\n", secret, secret);
     printf("secret[0]'s address is 0x%8x|%d  (on heap)\n", &secret[0], &secret[0]);
@@ -47,6 +52,7 @@ int main(int argc, char *argv[])
     /* Verify whether your attack is successful */
     printf("The original secrets: 0x%x -- 0x%x\n", SECRET1, SECRET2);
     printf("The new secrets:      0x%x -- 0x%x\n", secret[0], secret[1]);
+    counter++;
 
   }
   return 0;

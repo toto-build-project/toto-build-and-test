@@ -38,7 +38,7 @@ METADATA_OUTPUT_TAR_WORD = "output_tar"
 
 METADATA_CUMULATIVE_WORD = "cumulative_metadata_hash"
 METADATA_APPLICATION_WORD = "application"
-METADATA_APPLICATION_SEQUENCE = "sequence"
+METADATA_SEQUENCE_KEY = "sequence_"
 METADATA_CUMULATIVE_FILE_ELEMS = [METADATA_WORD, METADATA_OUTPUT_TAR_WORD]
 
 
@@ -259,15 +259,19 @@ def verify_metadatafiles(mainmeta_filepath):
   sha256_hasher = dict()
   for file_desc in elems_to_accumulate_hash:
     sha256_hasher[file_desc] = hashlib.sha256()
+ 
+  counter = 0
+  for cmd_key, cmd_value in cmd_data.iteritems():
+    if (not cmd_key or not cmd_key.startswith(METADATA_SEQUENCE_KEY)):
+      break
 
-  for counter in xrange(0, len(cmd_data)):
-    seq_key = "sequence_" + str(counter)
-
+    seq_key = METADATA_SEQUENCE_KEY + str(counter)
     for file_desc in elems_to_accumulate_hash:
       filename = cmd_data[seq_key][file_desc + "_path"] 
       hash_val = get_hash(filename)
       sha256_hasher[file_desc].update(hash_val)
       print "CCCCf file=", filename + ", hash=", hash_val
+    counter = counter + 1
 
   for file_desc in elems_to_accumulate_hash:
     main_cumulative_hash = mainmeta_data["cumulative_" + file_desc + "_hash"]

@@ -127,7 +127,7 @@ def read_command_policy(args):
   metadata_filepath = ""
   output_tar_filepath = ""
   cmd_counter = 0
-  add_hash_data = dict()
+  cmd_data = dict()
 
   # Begin to iterate through the commands.  First verify 
   # the command setup is valid, next process the actual command.
@@ -155,15 +155,15 @@ def read_command_policy(args):
     metadata_filepath, output_tar_filepath = process_command(cmd_elem, args.policy, output_tar_filepath)
 
     # Capture the command output to add to main_metadata.
-    add_hash_data[cmd_counter] = dict()
-    add_hash_data[cmd_counter]["cmd_name"] = cmd_name
-    add_hash_data[cmd_counter]["metadata"] = metadata_filepath
-    add_hash_data[cmd_counter]["output_tar"] = output_tar_filepath
-    add_hash_data[cmd_counter]["sequence"] = cmd_counter
+    cmd_data[cmd_counter] = dict()
+    cmd_data[cmd_counter]["cmd_name"] = cmd_name
+    cmd_data[cmd_counter]["metadata"] = metadata_filepath
+    cmd_data[cmd_counter]["output_tar"] = output_tar_filepath
+    cmd_data[cmd_counter]["sequence"] = cmd_counter
     cmd_counter = cmd_counter + 1
 
   # Add the output to the main_metadata dictionary.
-  add_main_hash_details_for_policy_seq(add_hash_data, metadata_files_processed, DEFAULT_ELEMS_TO_ACCUMULATE_HASH)
+  add_main_hash_details_for_policy_seq(cmd_data, metadata_files_processed, DEFAULT_ELEMS_TO_ACCUMULATE_HASH)
   metadata_files_processed["timestamp"] = str(datetime.datetime.utcnow())
     
   # Sign the data and write to main_metadata.json.
@@ -175,7 +175,7 @@ def read_command_policy(args):
 
 def add_main_hash_details_for_policy_seq(cmd_data, metadata_files_processed, elems_to_accumulate_hash):
 
-  # Initialize the SHA elements we will create cumulative hashes for.
+  # Initialize the cumulative hashes for specific files.
   sha256_hasher = dict()
   for file_desc in elems_to_accumulate_hash:
     sha256_hasher[file_desc] = hashlib.sha256()

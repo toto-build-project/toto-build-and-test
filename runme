@@ -1,4 +1,6 @@
 #!/bin/bash
+
+  TAR_FLAG=$1
   rm -rf work
   # setup sample execution commands
   #CMD="python main.py --command \"python tests/test.py tests/test_in.txt\"  "
@@ -6,10 +8,21 @@
   #CMD="python main.py --command \"cd tuf; sudo python setup.py build\"  "
   #CMD="python main.py --command \"cd examples/c_code_proj; ./makefile\"  "
   CMD="python main.py --command_policy sample_command_policy.json "
-  
+
+
+
+  if [ "$TAR_FLAG" == "1" ]; then
+    ##  For the input tarball sample 
+    rm -rf example_tars;  mkdir example_tars;  
+    tar -chvf example_tars/tuf.tar tuf;
+    tar -cvf example_tars/c_code_proj.tar examples/c_code_proj;
+    tar -cvf example_tars/java_maven_proj.tar examples/java_maven_proj;
+  fi
+
+
   # calling toto sample project
   echo $CMD
-  eval $CMD
+  eval '$CMD'
 
   # write cat file command
   echo "Executing [cat main_metadata.json], output:  >> "

@@ -128,7 +128,6 @@ def read_command_policy(args):
   output_tar_filepath = ""
   cmd_counter = 0
   add_hash_data = dict()
-  list_all_cmds = list()
 
   # Begin to iterate through the commands.  First verify 
   # the command setup is valid, next process the actual command.
@@ -155,17 +154,6 @@ def read_command_policy(args):
     # Process the commands and create the metadata files here.
     metadata_filepath, output_tar_filepath = process_command(cmd_elem, args.policy, output_tar_filepath)
 
-    """
-    # Capture the command output to add to main_metadata.
-    metadata_files_processed["application"][cmd_name] = dict()
-    add_hash_data[cmd_name] = dict()
-    add_hash_data[cmd_name]["metadata"] = metadata_filepath
-    add_hash_data[cmd_name]["output_tar"] = output_tar_filepath
-    add_hash_data[cmd_name]["sequence"] = cmd_counter
-    cmd_counter = cmd_counter + 1
-    list_all_cmds.append(add_hash_data)
-    """
-
     # Capture the command output to add to main_metadata.
     add_hash_data[cmd_counter] = dict()
     add_hash_data[cmd_counter]["cmd_name"] = cmd_name
@@ -173,10 +161,9 @@ def read_command_policy(args):
     add_hash_data[cmd_counter]["output_tar"] = output_tar_filepath
     add_hash_data[cmd_counter]["sequence"] = cmd_counter
     cmd_counter = cmd_counter + 1
-    list_all_cmds.append(add_hash_data)
 
   # Add the output to the main_metadata dictionary.
-  add_main_hash_details_for_policy_seq(add_hash_data, metadata_files_processed, DEFAULT_ELEMS_TO_ACCUMULATE_HASH, list_all_cmds)
+  add_main_hash_details_for_policy_seq(add_hash_data, metadata_files_processed, DEFAULT_ELEMS_TO_ACCUMULATE_HASH)
   metadata_files_processed["timestamp"] = str(datetime.datetime.utcnow())
     
   # Sign the data and write to main_metadata.json.
@@ -186,12 +173,7 @@ def read_command_policy(args):
 
 
 
-def add_main_hash_details_for_policy_seq(cmd_data, metadata_files_processed, elems_to_accumulate_hash, list_all_cmds):
-
-  ## CCCCC 
-  curcount = 0
-  alt_seq_hashsum = dict()
-  sha256_alt = hashlib.sha256()
+def add_main_hash_details_for_policy_seq(cmd_data, metadata_files_processed, elems_to_accumulate_hash):
 
   # Initialize the SHA elements we will create cumulative hashes for.
   sha256_hasher = dict()
@@ -212,137 +194,6 @@ def add_main_hash_details_for_policy_seq(cmd_data, metadata_files_processed, ele
     
   for file_desc in elems_to_accumulate_hash:
     metadata_files_processed["cumulative_" + file_desc + "_hash"] = sha256_hasher[file_desc].hexdigest()
-
-  return
-
-
-
-  """
-    curhash = alt_seq_hashsum[counter]["metadata"]
-    sha256_alt.update(curhash)
-    print "\n\n cur[", counter, "] hash=", curhash, "\n curhash=", sha256_alt.hexdigest()
-
-
-  # Iterate through each command and process the cmd_data field. 
-  for cmd_name, desclist in cmd_data.iteritems():
-    # Add specific command information to main_metadata.
-    for desc, desc_val in desclist.iteritems():  
-      # Adding a sequence number.
-      if (desc in ["sequence"]):
-        metadata_files_processed["application"][cmd_name][desc] = desc_val
-      else:
-        # Process the hash and filepath details.
-        hash_val = utils.get_hash(desc_val)
-        metadata_files_processed["application"][cmd_name][desc + "_hash"] = hash_val
-        metadata_files_processed["application"][cmd_name][desc + "_path"] = desc_val 
-        # Accumulate the hash for this file type.
-        sha256_hasher[desc].update(hash_val)
-
-        if (desc == "metadata"):
-          print "CCCCC", metadata_files_processed["application"][cmd_name]["sequence"], "--- hash[", cmd_name, "][", desc, "]=", hash_val, "\n--hashcur=", sha256_hasher[desc].hexdigest()
-          curcount = curcount + 1
-
-
-    seq_num = metadata_files_processed["application"][cmd_name]["sequence"]
-    ### CCCCC altaccum test 
-    alt_seq_hashsum[seq_num] = dict()
-    alt_seq_hashsum[seq_num]["metadata"] = metadata_files_processed["application"][cmd_name]["metadata_hash"]
-    ##print "THE METADATA =================",  metadata_files_processed["application"][cmd_name]
-
-
-  ##  CCCCCCC
-  for counter in xrange(0, len(alt_seq_hashsum)):  
-    curhash = alt_seq_hashsum[counter]["metadata"]
-    sha256_alt.update(curhash)
-    print "\n\n cur[", counter, "] hash=", curhash, "\n curhash=", sha256_alt.hexdigest()
-
-  # Create the final hex value for the hash and assign to main_metadata.
-  for desc in elems_to_accumulate_hash:
-    metadata_files_processed["cumulative_" + desc + "_hash"] = sha256_hasher[desc].hexdigest()
-    if (desc == "metadata"):
-       print "CCCCC finalhash=", metadata_files_processed["cumulative_" + desc + "_hash"]
-  """
-
-
-
-def add_main_hash_details_for_policy_seq3(cmd_data, metadata_files_processed, elems_to_accumulate_hash, list_all_cmds):
-
-  ## CCCCC 
-  curcount = 0
-  alt_seq_hashsum = dict()
-  sha256_alt = hashlib.sha256()
-
-  # Initialize the SHA elements we will create cumulative hashes for.
-  sha256_hasher = dict()
-  for desc in elems_to_accumulate_hash:
-    sha256_hasher[desc] = hashlib.sha256()
-
-  # Iterate through each command and process the cmd_data field. 
-  for cmd_name, desclist in cmd_data.iteritems():
-    # Add specific command information to main_metadata.
-    for desc, desc_val in desclist.iteritems():  
-      # Adding a sequence number.
-      if (desc in ["sequence"]):
-        metadata_files_processed["application"][cmd_name][desc] = desc_val
-      else:
-        # Process the hash and filepath details.
-        hash_val = utils.get_hash(desc_val)
-        metadata_files_processed["application"][cmd_name][desc + "_hash"] = hash_val
-        metadata_files_processed["application"][cmd_name][desc + "_path"] = desc_val 
-        # Accumulate the hash for this file type.
-        sha256_hasher[desc].update(hash_val)
-
-        if (desc == "metadata"):
-          print "CCCCC", metadata_files_processed["application"][cmd_name]["sequence"], "--- hash[", cmd_name, "][", desc, "]=", hash_val, "\n--hashcur=", sha256_hasher[desc].hexdigest()
-          curcount = curcount + 1
-
-
-    seq_num = metadata_files_processed["application"][cmd_name]["sequence"]
-    ### CCCCC altaccum test 
-    alt_seq_hashsum[seq_num] = dict()
-    alt_seq_hashsum[seq_num]["metadata"] = metadata_files_processed["application"][cmd_name]["metadata_hash"]
-    ##print "THE METADATA =================",  metadata_files_processed["application"][cmd_name]
-
-
-  ##  CCCCCCC
-  for counter in xrange(0, len(alt_seq_hashsum)):  
-    curhash = alt_seq_hashsum[counter]["metadata"]
-    sha256_alt.update(curhash)
-    print "\n\n cur[", counter, "] hash=", curhash, "\n curhash=", sha256_alt.hexdigest()
-
-  # Create the final hex value for the hash and assign to main_metadata.
-  for desc in elems_to_accumulate_hash:
-    metadata_files_processed["cumulative_" + desc + "_hash"] = sha256_hasher[desc].hexdigest()
-    if (desc == "metadata"):
-       print "CCCCC finalhash=", metadata_files_processed["cumulative_" + desc + "_hash"]
-
-
-
-def add_main_hash_details_for_policy_seq2(cmd_data, metadata_files_processed):
-  #sha256_hasher = hashlib.sha256()
-  sha256_hasher = dict()
-  """
-  sha256_hasher["metadata"] = {}
-  sha256_hasher["output_tar"] = {}
-  """
-  sha256_hasher["metadata"] = hashlib.sha256()
-  sha256_hasher["output_tar"] = hashlib.sha256()
-
-  for cmd_name, desclist in cmd_data.iteritems():
-    # Add command specific information to the main_metadata file.
-    print "CCC desclist=", desclist
-    for desc, desc_val in desclist.iteritems():  
-      if (desc in ["sequence"]):
-        metadata_files_processed["application"][cmd_name][desc] = desc_val
-      else:
-        # Process the hash and filepath details.
-        hash_val = utils.get_hash(desc_val)
-        metadata_files_processed["application"][cmd_name][desc + "_hash"] = hash_val
-        metadata_files_processed["application"][cmd_name][desc + "_path"] = desc_val 
-        # Add to the hasher to calculate the cumulative hash of metadata files.
-        sha256_hasher[desc].update(hash_val)
-    metadata_files_processed["cumulative_" + desc + "_hash"] = sha256_hasher[desc].hexdigest()
-
 
 
 def process_command(command, args_policy, prev_output_filepath):

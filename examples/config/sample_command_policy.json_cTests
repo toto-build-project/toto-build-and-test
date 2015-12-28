@@ -1,0 +1,85 @@
+{
+  "commands" : [
+    [ 
+        "cd examples/c_code_proj && make -f makefile",
+        "ls -ltr examples/c_code_proj/test",
+        "build_snap_err1_ret2",
+        "example_tars/c_code_projX.tar",
+        false,
+        "examples/c_code_proj/test"
+    ],
+    [ 
+        "cd examples/c_code_proj; make -f makefile",
+        "ls -ltr examples/c_code_proj/test",
+        "build_snap_err2_ret127",
+        "example_tars/c_code_projX.tar",
+        false,
+        "examples/c_code_proj/test"
+    ],
+    [ 
+        "cd examples/c_code_proj && make -f makefile clean test",
+        "ls -ltr examples/c_code_proj/test",
+        "build_snap_good_testTarOnFile",
+        "example_tars/c_code_proj.tar",
+        false,
+        "examples/c_code_proj/test"
+    ],
+    [ 
+        "cd examples/c_code_proj && make -f makefile clean test",
+        "ls -ltr examples/c_code_proj/test",
+        "build_snap_good_testTarOnFolder",
+        "example_tars/c_code_proj.tar",
+        false,
+        "examples/c_code_proj"
+    ],
+    [ 
+        "cd examples/c_code_proj && pwd && ./test < addr_seed",
+        "ls -ltr examples/c_code_proj/test",
+        "build_snap_execute_testNullOutput_NoTarCreated",
+        "example_tars/c_code_projC.tar",
+        true,
+        null
+    ],
+    [ 
+        "cd examples/c_code_proj && pwd && ./test < 'ZZZZZZZZ'",
+        "ls -ltr examples/c_code_proj/test",
+        "build_snap_executeWithExistingTar",
+        "work/source_input/build_snap_good_testFolderTar/build_snap_good_testFolderTar.tar",
+        false,
+        null
+    ],
+    [ 
+        "cd examples/c_code_proj && make -f makefile clean",
+        "ls -ltr examples/c_code_proj/*tar",
+        "build_snap_testSampleNullInput",
+        null,
+        false,
+        null
+    ],
+    [ 
+        "cd examples/c_code_proj && make -f makefile all install",
+        "ls -ltr examples/c_code_proj/*tar",
+        "build_snap_gensTar_CheckOutputHasTarOfTar",
+        "example_tars/c_code_proj.tar",
+        false,
+        "examples/c_code_proj/create_test2_exe.tar"
+    ],
+    [ 
+        "cd examples/c_code_proj && tar -xvf create_test2_exe.tar && ./test2 < addr_seed",
+        "ls -ltr examples/c_code_proj/*tar",
+        "build_snap_runPrevOutputTest2_Valid",
+        "example_tars/maven_code_proj.tar",
+        true,
+        null
+    ],
+    [ 
+        "cd examples/c_code_proj && tar -xvf create_test2_exe.tar && ./test2 < addr_seed",
+        "ls -ltr examples/c_code_proj/*tar",
+        "build_snap_runPreviousOutput_PrevOutputIsNull_ValidAsNullInput",
+        "example_tars/maven_code_proj.tar",
+        true,
+        null
+    ]
+
+  ]
+}

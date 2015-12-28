@@ -58,7 +58,7 @@ DEFAULT_WORK_DIR = os.path.join(DEFAULT_CUR_DIR, "work")
 DEFAULT_SOURCE_INPUT_DIR = os.path.join(DEFAULT_WORK_DIR, "source_input")
 DEFAULT_CMD_TO_SOURCE_INPUT_DIR_BEGIN = "cd "
 DEFAULT_CMD_TO_SOURCE_INPUT_DIR_END = " && "
-DEFAULT_ELEMS_TO_ACCUMULATE_HASH = ["metadata", "output_tar"]
+DEFAULT_ELEMS_TO_ACCUMULATE_HASH = ["metadata", "input", "output_tar"]
 
 def main():
   # Setup the command line parser
@@ -97,7 +97,7 @@ def read_command_policy(args):
   <Exceptions>
     IOError: 
       1) Returned if the cmd_name is not specified correctly.
-      2) Returned if the input file does not exist.
+      DISABLED - 2) Returned if the input file does not exist.
 
   <Returns>
     None.
@@ -133,6 +133,7 @@ def read_command_policy(args):
   # the command setup is valid, next process the actual command.
   for cmd_elem in commands:
     cmd_name = cmd_elem[2]
+    use_prev_output = cmd_elem[4]
 
     # Check if the cmd_name is empty or is 'main'.  We need to use
     # the cmd_name field when naming our metadata files so 
@@ -140,26 +141,25 @@ def read_command_policy(args):
     assert (cmd_name), "Error: The cmd_name cannot be null."
     assert (cmd_name != "main"), "Error: The cmd_name cannot equal 'main'."
 
-    # Validate the input file exists else flag an error.
-    ##assert (cmd_elem[3] and os.path.exists(cmd_elem[3])), "Error:  The input file " + cmd_elem[3] + " specified does not exist."
-    """  CCCCCCCCCCCCCCC
-      if (cmd_elem[3]):
-        try:
-          os.path.exists(cmd_elem[3])
-        except IOError:
-          print "Error:  The input file was specified, however it does not exist."
     """
+    CE  - enable this if you want the process to fail when receive 
+     input files that do not exist. 
 
+    # Validate the input file exists else flag an error.
+    assert (cmd_elem[3] and os.path.exists(cmd_elem[3])), "Error:  The input file " + cmd_elem[3] + " specified does not exist."
+    """ 
 
     # Process the commands and create the metadata files here.
-    metadata_filepath, output_tar_filepath = process_command(cmd_elem, args.policy, output_tar_filepath)
+    metadata_filepath, output_tar_filepath, input_filepath = process_command(cmd_elem, args.policy, output_tar_filepath)
 
     # Capture the command output to add to main_metadata.
     cmd_data[cmd_counter] = dict()
     cmd_data[cmd_counter]["cmd_name"] = cmd_name
     cmd_data[cmd_counter]["metadata"] = metadata_filepath
+    cmd_data[cmd_counter]["input"] = input_filepath
     cmd_data[cmd_counter]["output_tar"] = output_tar_filepath
     cmd_data[cmd_counter]["sequence"] = cmd_counter
+    cmd_data[cmd_counter]["use_prev_output"] = use_prev_output
     cmd_counter = cmd_counter + 1
 
   # Add the output to the main_metadata dictionary.
@@ -180,18 +180,45 @@ def add_main_hash_details_for_policy_seq(cmd_data, metadata_files_processed, ele
   for file_desc in elems_to_accumulate_hash:
     sha256_hasher[file_desc] = hashlib.sha256()
 
+  # Update main_metadata with sequence_# and details for each command
   for counter in xrange(0, len(cmd_data)):
+    # Populate general information.
     seq_key = "sequence_" + str(counter)
     metadata_files_processed["application"][seq_key] = dict()
     metadata_files_processed["application"][seq_key]["cmd_name"]  = cmd_data[counter]["cmd_name"]
 
+    #  Add a flag to main_meta to see if the current input matches prev output.
+    """
+    # CE - use this to spoof an error
+    if (cmd_data[counter]["cmd_name"] == "build_snap_execute"):
+      cmd_data[counter-1]["output_tar"] = "spoof_error"
+    """
+
+    # If the use_prev_output flag was enabled for the policy, 
+    # then compare the input and prev_output hashes.  Write the 
+    # valid flag only if the use_prev_output flag was enabled.
+    prev_output_used_and_hashes_valid = False
+    if (counter > 0 and cmd_data[counter]["use_prev_output"]):
+      hash_input = utils.get_hash(cmd_data[counter]["input"])
+      hash_output = utils.get_hash(cmd_data[counter-1]["output_tar"])
+      if (hash_input == hash_output):
+        prev_output_used_and_hashes_valid = True
+      metadata_files_processed["application"][seq_key]["prev_output_used_and_hashes_valid"]  = prev_output_used_and_hashes_valid
+
+    # Populate specifically for filepath and hash - input, output, metadata.
     for file_desc in elems_to_accumulate_hash:
+      # Populate the file variables.  
+      hash_val = None
       filename = cmd_data[counter][file_desc]
-      hash_val = utils.get_hash(filename)
+      if (filename):
+        hash_val = utils.get_hash(filename)
+        sha256_hasher[file_desc].update(hash_val)
+
+      # Update main_metdata with file details.  
       metadata_files_processed["application"][seq_key][file_desc + "_hash"] = hash_val
       metadata_files_processed["application"][seq_key][file_desc + "_path"] = filename
-      sha256_hasher[file_desc].update(hash_val)
-    
+
+  # Update main_metdata for the cumulative hashes.
   for file_desc in elems_to_accumulate_hash:
     metadata_files_processed["cumulative_" + file_desc + "_hash"] = sha256_hasher[file_desc].hexdigest()
 
@@ -211,7 +238,7 @@ def process_command(command, args_policy, prev_output_filepath):
       commandline. 
     prev_output_filepath:
       The previous output filepath generated from the last 
-      command and the use_previous_output flag is True.
+      command and the use_prev_output flag is True.
 
   <Exceptions>
     TBD.
@@ -234,10 +261,13 @@ def process_command(command, args_policy, prev_output_filepath):
 
   # Details for the output_filepath, also tie to the source_input dir.
   output_filepath = command[5]
-  if (output_filepath):
-    output_filepath = os.path.join(cmd_source_input_path, output_filepath)
   orig_output_filepath = command[5]
-  output_prefilename = os.path.join(cmd_source_input_path, cmd_name) 
+  output_prefilename = ""
+  qualified_output_file = ""
+  if (output_filepath): 
+    output_filepath = os.path.join(cmd_source_input_path, output_filepath)
+    output_prefilename = os.path.join(cmd_source_input_path, cmd_name) 
+    qualified_output_file = output_prefilename + ".tar"
 
   # Details for the use of input_filepath.
   use_prev_output = command[4]
@@ -282,13 +312,16 @@ def process_command(command, args_policy, prev_output_filepath):
     if return_code == 0:
       metadata["application"]["verify_cmd_return_code"] = "Yes|" + stdout
 
-
   # If the output target is specified, tar it and place 
-  # into the source_input/<cmd_name>/<cmd_name>.tar
+  # into the source_input/<cmd_name>/<cmd_name>.tar. 
+  # Tars can be created for directories or files. If there is no 
+  # data in the specified location, then a tar is created with 0 bytes.
   utils.tar_file(output_filepath, output_prefilename, orig_output_filepath)
-  qualified_output_file = output_prefilename + ".tar"
   metadata["application"]["output_tar_path"] = qualified_output_file
-  metadata["application"]["output_tar_hash"] = utils.get_hash(qualified_output_file)
+  hash_output = None
+  if (output_filepath):
+    hash_output = utils.get_hash(qualified_output_file)
+  metadata["application"]["output_tar_hash"] = hash_output
 
   # Process the policy file 
   policy_dict = process_policy_file(metadata, policy_filepath)
@@ -304,7 +337,7 @@ def process_command(command, args_policy, prev_output_filepath):
   utils.gen_json(signed_metadata, metadata_file)
 
   # Return the metadata and output file for main_metadata.
-  return (qualified_metadata_file, qualified_output_file)
+  return (qualified_metadata_file, qualified_output_file, input_filepath)
 
 
 

@@ -30,10 +30,10 @@
   optional arguments:
     -h, --help         show this help message and exit
     --version          show program's version number and exit
-    --input FILEPATH   the path to the desired input file to be routed through
-    --output FILEPATH  the path to the desired output file to be generated
+    --input FILEPATH   the path and name of the desired tar input file
+    --output FILEPATH  the path and name of the desired tar output file
     --policy FILENAME  the path to the desired file specifying build/test policy
-    --command_policy   FILENAME  the path to the desired file specifying command policy
+    --command_policy FILENAME  the path to the desired file specifying command policy
     --command          the bash command to execute the build or test
 """
 
@@ -115,7 +115,7 @@ def read_command_policy(args):
   else:
     # The command is read from the commandline (COMMAND var).
     # We will autoname the file generic_metadata.json. 
-    tmp_commands = [[args.command, None, "generic", args.input]]
+    tmp_commands = [[args.command, None, "generic", args.input, False, args.output]]
     commands = json.dumps(tmp_commands)
     commands = tuf.util.load_json_string(commands)
 
@@ -142,7 +142,7 @@ def read_command_policy(args):
     assert (cmd_name != "main"), "Error: The cmd_name cannot equal 'main'."
 
     """
-    CE  - enable this if you want the process to fail when receive 
+    CE  - enable this if you want the process to fail when receiving 
      input files that do not exist. 
 
     # Validate the input file exists else flag an error.
@@ -603,8 +603,9 @@ def get_command_line_args():
   group.add_argument('--command', metavar='COMMAND', type=str, help='the bash command to execute the build or test')
 
   parser.add_argument('--version', action='version', version=TOTO_TOOL_VERSION)
-  parser.add_argument('--input', metavar='FILEPATH', help='the path to the desired input file to be routed through stdin')
-  parser.add_argument('--policy', metavar='FILENAME', help='the path to the desired file specifying build/test policy')
+  parser.add_argument('--input', metavar='FILEPATH', help='the path and name of the desired tar input file')
+  parser.add_argument('--output', metavar='FILEPATH', help='the path and name of the desired tar output file')
+  parser.add_argument('--policy', metavar='FILENAME', help='the path to the desired file specifying command policy')
 
   return parser.parse_args()
 

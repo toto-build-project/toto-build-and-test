@@ -35,11 +35,12 @@ import tuf
 
 METADATA_WORD = "metadata"
 METADATA_OUTPUT_TAR_WORD = "output_tar"
+METADATA_INPUT_TAR_WORD = "input"
 
 METADATA_CUMULATIVE_WORD = "cumulative_metadata_hash"
 METADATA_APPLICATION_WORD = "application"
 METADATA_SEQUENCE_KEY = "sequence_"
-METADATA_CUMULATIVE_FILE_ELEMS = [METADATA_WORD, METADATA_OUTPUT_TAR_WORD]
+METADATA_CUMULATIVE_FILE_ELEMS = [METADATA_WORD, METADATA_OUTPUT_TAR_WORD, METADATA_INPUT_TAR_WORD]
 
 
 def count_string(s, substring):
@@ -253,7 +254,7 @@ def verify_metadatafiles(mainmeta_filepath):
 
   elems_to_accumulate_hash = METADATA_CUMULATIVE_FILE_ELEMS
   mainmeta_data = tuf.util.load_json_file(mainmeta_filepath)
-  cmd_data = mainmeta_data["application"]
+  cmd_data = mainmeta_data[METADATA_APPLICATION_WORD]
 
   # Initialize the SHA elements we will create cumulative hashes for.
   sha256_hasher = dict()
@@ -262,21 +263,49 @@ def verify_metadatafiles(mainmeta_filepath):
  
   counter = 0
   for cmd_key, cmd_value in cmd_data.iteritems():
+    # Skip non sequence entries in the application dictionary.
     if (not cmd_key or not cmd_key.startswith(METADATA_SEQUENCE_KEY)):
       break
 
+    # Process the current policy sequence.  
     seq_key = METADATA_SEQUENCE_KEY + str(counter)
+    prev_seq_key = METADATA_SEQUENCE_KEY + str(counter-1)
     for file_desc in elems_to_accumulate_hash:
+      hash_val = None
       filename = cmd_data[seq_key][file_desc + "_path"] 
-      hash_val = get_hash(filename)
-      sha256_hasher[file_desc].update(hash_val)
-      print "CCCCf file=", filename + ", hash=", hash_val
+      if (filename):
+        hash_val = get_hash(filename)
+        sha256_hasher[file_desc].update(hash_val)
+      """
+      if (filename):
+        print "CCCCf file=", filename + ", hash=", hash_val
+      """
+
+    # Test1: Validate the previous sequence, so if we see that the 
+    # main_metadata file has the prev_output_used_and_hashes_valid
+    # flag then open the current input file and compare to 
+    # previous sequence's output file. 
+
+    """
+    # CE - use this to spoof an error 
+    if (cmd_data[seq_key]["cmd_name"] == "build_snap_execute"):
+     cmd_data[prev_seq_key]["output_tar_path"] = "spoof_error"
+    """
+
+    if (counter > 0 and "prev_output_used_and_hashes_valid" in cmd_data[seq_key]):
+      hash_input = get_hash(cmd_data[seq_key]["input_path"])
+      hash_output = get_hash(cmd_data[prev_seq_key]["output_tar_path"])
+      if (hash_input != hash_output):
+        write_message("err", "Error: The previous output does not match input tar seq" + str(counter) + ".")
+        return False
+
     counter = counter + 1
 
+  # Test2: Compare the file element's cumulative_hash and read_hashes.
   for file_desc in elems_to_accumulate_hash:
     main_cumulative_hash = mainmeta_data["cumulative_" + file_desc + "_hash"]
-    print "\n\n\nCCCCf read=", sha256_hasher[file_desc].hexdigest(),  "\n cumulative=", main_cumulative_hash
     if (main_cumulative_hash != sha256_hasher[file_desc].hexdigest()):
+      write_message("err", "Error: The previous output does not match input tar seq" + str(counter) + ".")
       return False
 
   return True

@@ -174,6 +174,37 @@ def read_command_policy(args):
 
 
 def add_main_hash_details_for_policy_seq(cmd_data, metadata_files_processed, elems_to_accumulate_hash):
+  """
+  <Purpose>
+    Adds command execution details into the metadata_files_processed 
+    dictionary. Structures each command as a sequence_# key 
+    under this dictionary, store file paths, hashes, cmd_name,
+    and verifies the validity of previous out  
+    
+    Next, modifies the main_metadata with cumulative hash details.
+
+  <Arguments>
+    cmd_data:
+      Contains data from command execution that will update the
+      metadata_files_processed dictionary.
+    metadata_files_processed:
+      Modify this dictionary with cmd_data to update the main_metadata file.
+    elems_to_accumulate_hash: 
+      Contains the elems that cumulative hashes will be calculated for.
+
+  <Exceptions>
+    None. 
+
+  <Side Effects>
+    'metadata_files_processed' is modified to include the cmd_data
+    (ex: filepath, hashes, sequence checks).  Modifications
+    appear under application for each sequence_#.  Additionally, the 
+    main_metadata s modified to store data that is applicable 
+    as an overview for all commands (ex: cumulative hashes).
+
+  <Returns>
+    None.
+  """
 
   # Initialize the cumulative hashes for specific files.
   sha256_hasher = dict()
@@ -187,16 +218,9 @@ def add_main_hash_details_for_policy_seq(cmd_data, metadata_files_processed, ele
     metadata_files_processed["application"][seq_key] = dict()
     metadata_files_processed["application"][seq_key]["cmd_name"]  = cmd_data[counter]["cmd_name"]
 
-    #  Add a flag to main_meta to see if the current input matches prev output.
-    """
-    # CE - use this to spoof an error
-    if (cmd_data[counter]["cmd_name"] == "build_snap_execute"):
-      cmd_data[counter-1]["output_tar"] = "spoof_error"
-    """
-
-    # If the use_prev_output flag was enabled for the policy, 
+    # Check if use_prev_output flag is enabled for the policy, 
     # then compare the input and prev_output hashes.  Write the 
-    # valid flag only if the use_prev_output flag was enabled.
+    # valid flag only if the use_prev_output flag is enabled.
     prev_output_used_and_hashes_valid = False
     if (counter > 0 and cmd_data[counter]["use_prev_output"]):
       hash_input = utils.get_hash(cmd_data[counter]["input"])
@@ -205,7 +229,7 @@ def add_main_hash_details_for_policy_seq(cmd_data, metadata_files_processed, ele
         prev_output_used_and_hashes_valid = True
       metadata_files_processed["application"][seq_key]["prev_output_used_and_hashes_valid"]  = prev_output_used_and_hashes_valid
 
-    # Populate specifically for filepath and hash - input, output, metadata.
+    # Populate filepath and hash - input, output, metadata.
     for file_desc in elems_to_accumulate_hash:
       # Populate the file variables.  
       hash_val = None

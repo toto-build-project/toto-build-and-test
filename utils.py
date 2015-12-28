@@ -233,8 +233,12 @@ def verify_metadatafiles(mainmeta_filepath):
     It will read the main_metadata file and parse 
     through for the sub metadata files <name>_metadata.json.
     The <name>_metadata.json files are hashed through
-    and the cumulative hash is compared to the one 
-    stored in main_metadata.  
+    and the cumulative hash is compared to the main_metadata 
+    hash.
+    
+    Additionally, the main_metadata is checked to see if the 
+    prev output file hash matches the current file hash.  
+
     
     TBA:  Additional fields may be added in the future, 
     this function to be updated with those changes.
@@ -276,21 +280,11 @@ def verify_metadatafiles(mainmeta_filepath):
       if (filename):
         hash_val = get_hash(filename)
         sha256_hasher[file_desc].update(hash_val)
-      """
-      if (filename):
-        print "CCCCf file=", filename + ", hash=", hash_val
-      """
 
     # Test1: Validate the previous sequence, so if we see that the 
     # main_metadata file has the prev_output_used_and_hashes_valid
     # flag then open the current input file and compare to 
     # previous sequence's output file. 
-
-    """
-    # CE - use this to spoof an error 
-    if (cmd_data[seq_key]["cmd_name"] == "build_snap_execute"):
-     cmd_data[prev_seq_key]["output_tar_path"] = "spoof_error"
-    """
 
     if (counter > 0 and "prev_output_used_and_hashes_valid" in cmd_data[seq_key]):
       hash_input = get_hash(cmd_data[seq_key]["input_path"])
@@ -313,19 +307,70 @@ def verify_metadatafiles(mainmeta_filepath):
 
 
 def untar_file(path, filename):
+  """
+  <Purpose>
+    Untars a tar file.
+
+  <Arguments>
+    path:
+      The directory where the file is extracted.
+    filename:
+      The tar file to be extracted.
+
+  <Exceptions>
+    TBD.
+
+  <Side Effects> 
+    Extracts the tar file contents into the directory specified. 
+
+  <Return>
+    None.
+  """
+
   try: 
     if (filename and filename.endswith("tar")):
       tar = tarfile.open(filename, mode="r")
       tar.extractall(path)
       tar.close()
-      ret_code = 1
   except IOError:
      write_message("err", "Tar file is not found for [" + os.path.join(path, filename) + "].")
 
 
 def tar_file(source_filepath, output_prefilename, arc_name):
+  """
+  <Purpose>
+    Tar a file or directory.
+
+    If there is no data in the source_filepath location, then a tar 
+    is created with 0 bytes.
+
+  <Arguments>
+    source_filepath:
+      The directory where the file is extracted.
+    output_prefilename:
+      The path and name of the tar file to be created.  The ".tar" 
+      extension is omitted, as this function will add it.
+    arc_name:
+      The directory up to which the files/directories will be archieved 
+      up to.  For example:  examples/a/b directory with an arc_name of 
+      b will tar b/*.
+
+  <Exceptions>
+    TBD.
+ 
+  <Side Effects> 
+    Creates a tar file of the directory passed into the function 
+    and the tar is located in the path set in the 
+    output_prefilename.  
+
+  <Return>
+    None.
+  """
+
+  # If any of the fields are unpopulated, do not create the tar. 
   if (not (source_filepath and output_prefilename and arc_name)):
     return
+  # Begin to create the tar here. 
   try:
     with tarfile.open(output_prefilename + ".tar", "w") as tar:
       tar.add(source_filepath, arcname=arc_name)
@@ -335,6 +380,24 @@ def tar_file(source_filepath, output_prefilename, arc_name):
 
 
 def write_message(message_type, message):
+  """
+  <Purpose>
+    Prints a message to the screen.
+
+  <Arguments>
+    message_type:
+      A string, currently only handles "err".  This appends "ERROR" text 
+      to the screen. 
+    message:
+`     A message to write to the screen.
+
+  <Exceptions>
+    TBD.
+
+  <Return>
+    None.
+  """
+
   return
   if (message_type == "err"):
     print "ERROR: ", message

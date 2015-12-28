@@ -334,6 +334,8 @@ def untar_file(path, filename):
       tar.close()
   except IOError:
      write_message("err", "Tar file is not found for [" + os.path.join(path, filename) + "].")
+  except tarfile.ReadError:
+     write_message("err", "Tar file cannot be read for [" + os.path.join(path, filename) + "].")
 
 
 def tar_file(source_filepath, output_prefilename, arc_name):
@@ -376,7 +378,7 @@ def tar_file(source_filepath, output_prefilename, arc_name):
       tar.add(source_filepath, arcname=arc_name)
   except OSError:
      write_message("err", "The target filename is [" + output_prefilename)
-     write_message("err", "]  --> for [" + source_filepath + "].")
+     write_message("err", "] for [" + source_filepath + "].")
 
 
 def write_message(message_type, message):
@@ -389,7 +391,7 @@ def write_message(message_type, message):
       A string, currently only handles "err".  This appends "ERROR" text 
       to the screen. 
     message:
-`     A message to write to the screen.
+      A message to write to the screen.
 
   <Exceptions>
     TBD.
